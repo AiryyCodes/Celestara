@@ -1,2 +1,4 @@
 # Temporary
 build/
+.cache/
+Session.vim
