@@ -28,7 +28,7 @@ int main()
         return EXIT_FAILURE;
     }
 
-    Window window("Astralis", 1280, 720);
+    Window window("Celestara", 1280, 720);
     window.Init();
 
     glfwMakeContextCurrent(window.GetHandle());
