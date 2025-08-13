@@ -15,7 +15,8 @@ add_custom_target(link_target ALL
 
 find_package(glfw3 REQUIRED)
 add_subdirectory("Deps/glad")
+add_subdirectory("Deps/stb")
 find_package(glm REQUIRED)
 find_package(spdlog REQUIRED)
 
-target_link_libraries(${PROJECT_NAME} PRIVATE glfw glad glm spdlog::spdlog)
+target_link_libraries(${PROJECT_NAME} PRIVATE glfw glad glm spdlog::spdlog stb)

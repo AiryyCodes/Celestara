@@ -2,6 +2,7 @@
 
 #include "Renderer/Mesh.h"
 #include "Renderer/Shader.h"
+#include "Renderer/Texture.h"
 
 class Renderer
 {
@@ -11,7 +12,7 @@ public:
 
     static void Begin(const Shader &shader);
 
-    static void Submit(const Mesh &mesh);
+    static void Submit(const Mesh &mesh, const Texture &texture);
 
     static void End();
 

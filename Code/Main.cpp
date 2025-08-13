@@ -1,6 +1,7 @@
 #include "Renderer/Mesh.h"
 #include "Renderer/Renderer.h"
 #include "Renderer/Shader.h"
+#include "Renderer/Texture.h"
 #include "Renderer/Vertex.h"
 #include "Renderer/Window.h"
 
@@ -11,13 +12,13 @@
 #include <vector>
 
 static std::vector<Vertex> QUAD_VERTICES = {
-    {{-0.5f, 0.5f}},
-    {{-0.5f, -0.5f}},
-    {{0.5f, -0.5f}},
+    {{-0.5f, 0.5f}, {0.0f, 1.0f}},
+    {{-0.5f, -0.5f}, {0.0f, 0.0f}},
+    {{0.5f, -0.5f}, {1.0f, 0.0f}},
 
-    {{-0.5f, 0.5f}},
-    {{0.5f, 0.5f}},
-    {{0.5f, -0.5f}},
+    {{-0.5f, 0.5f}, {0.0f, 1.0f}},
+    {{0.5f, 0.5f}, {1.0f, 1.0f}},
+    {{0.5f, -0.5f}, {1.0f, 0.0f}},
 };
 
 int main()
@@ -43,6 +44,7 @@ int main()
     shader.Init();
 
     Mesh mesh(QUAD_VERTICES);
+    Texture texture("Assets/Textures/Grass.png");
 
     while (!window.IsClosing())
     {
@@ -54,7 +56,7 @@ int main()
 
         Renderer::Begin(shader);
 
-        Renderer::Submit(mesh);
+        Renderer::Submit(mesh, texture);
 
         Renderer::End();
 

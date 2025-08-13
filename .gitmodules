@@ -1,3 +1,6 @@
 [submodule "Deps/glad"]
 	path = Deps/glad
 	url = https://github.com/AiryyCodes/glad-cmake.git
+[submodule "Deps/stb"]
+	path = Deps/stb
+	url = https://github.com/AiryyCodes/stb-cmake.git

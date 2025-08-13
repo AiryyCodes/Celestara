@@ -1,4 +1,5 @@
 #include "Renderer.h"
+#include "Renderer/Texture.h"
 
 #include <glad/gl.h>
 #include <GLFW/glfw3.h>
@@ -34,8 +35,9 @@ void Renderer::Begin(const Shader &shader)
     s_ActiveShader->Bind();
 }
 
-void Renderer::Submit(const Mesh &mesh)
+void Renderer::Submit(const Mesh &mesh, const Texture &texture)
 {
+    texture.Bind();
     mesh.Bind();
     glDrawArrays(GL_TRIANGLES, 0, mesh.GetNumVertices());
 }
