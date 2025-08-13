@@ -26,3 +26,21 @@ bool Renderer::Init()
 
     return true;
 }
+
+void Renderer::Begin(const Shader &shader)
+{
+    s_ActiveShader = &shader;
+
+    s_ActiveShader->Bind();
+}
+
+void Renderer::Submit(const Mesh &mesh)
+{
+    mesh.Bind();
+    glDrawArrays(GL_TRIANGLES, 0, mesh.GetNumVertices());
+}
+
+void Renderer::End()
+{
+    s_ActiveShader->Unbind();
+}
