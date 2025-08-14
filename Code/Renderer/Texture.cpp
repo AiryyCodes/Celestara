@@ -6,6 +6,12 @@
 #define STB_IMAGE_IMPLEMENTATION
 #include <stb/stb_image.h>
 
+Texture::Texture()
+    : m_Path()
+{
+    glGenTextures(1, &m_Id);
+}
+
 Texture::Texture(const std::string &path)
     : m_Path(path)
 {
@@ -49,4 +55,12 @@ void Texture::Bind() const
 void Texture::Unbind()
 {
     glBindTexture(GL_TEXTURE_2D, 0);
+}
+
+void Texture::SetTexture(const std::string &path)
+{
+    m_Path = path;
+
+    // Update the texture data with the new texture
+    Init();
 }

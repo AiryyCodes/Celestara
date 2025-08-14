@@ -5,10 +5,13 @@
 class Texture
 {
 public:
+    Texture();
     Texture(const std::string &path);
 
     void Bind() const;
     static void Unbind();
+
+    void SetTexture(const std::string &path);
 
 private:
     void Init();

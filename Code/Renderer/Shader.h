@@ -15,6 +15,7 @@ public:
     void Bind() const;
     static void Unbind();
 
+    void SetUniform(const std::string &name, const Matrix4 &value) const;
     void SetUniform(const std::string &name, const Vector2 &value) const;
     void SetUniform(const std::string &name, bool value) const;
     void SetUniform(const std::string &name, int value) const;

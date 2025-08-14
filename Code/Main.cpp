@@ -1,25 +1,12 @@
-#include "Renderer/Mesh.h"
 #include "Renderer/Renderer.h"
 #include "Renderer/Shader.h"
-#include "Renderer/Texture.h"
-#include "Renderer/Vertex.h"
 #include "Renderer/Window.h"
+#include "World/Player.h"
 
 #include <cstdio>
 #include <cstdlib>
 #include <glad/gl.h>
 #include <GLFW/glfw3.h>
-#include <vector>
-
-static std::vector<Vertex> QUAD_VERTICES = {
-    {{-0.5f, 0.5f}, {0.0f, 1.0f}},
-    {{-0.5f, -0.5f}, {0.0f, 0.0f}},
-    {{0.5f, -0.5f}, {1.0f, 0.0f}},
-
-    {{-0.5f, 0.5f}, {0.0f, 1.0f}},
-    {{0.5f, 0.5f}, {1.0f, 1.0f}},
-    {{0.5f, -0.5f}, {1.0f, 0.0f}},
-};
 
 int main()
 {
@@ -43,8 +30,8 @@ int main()
     Shader shader("Assets/Shaders/Main.vert", "Assets/Shaders/Main.frag");
     shader.Init();
 
-    Mesh mesh(QUAD_VERTICES);
-    Texture texture("Assets/Textures/Grass.png");
+    Player player;
+    player.Init();
 
     while (!window.IsClosing())
     {
@@ -56,7 +43,7 @@ int main()
 
         Renderer::Begin(shader);
 
-        Renderer::Submit(mesh, texture);
+        player.Render();
 
         Renderer::End();
 

@@ -13,7 +13,7 @@ public:
     void Bind() const;
     static void Unbind();
 
-    void SetVertices(const std::vector<Vertex> vertices);
+    void SetVertices(const std::vector<Vertex> &vertices);
 
     int GetNumVertices() const { return m_NumVertices; }
 

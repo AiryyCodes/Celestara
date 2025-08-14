@@ -105,6 +105,17 @@ void Shader::Unbind()
     glUseProgram(0);
 }
 
+void Shader::SetUniform(const std::string &name, const Matrix4 &value) const
+{
+    int location = glGetUniformLocation(m_Id, name.c_str());
+    if (location == -1)
+    {
+        return;
+    }
+
+    glUniformMatrix4fv(location, 1, false, glm::value_ptr(value));
+}
+
 void Shader::SetUniform(const std::string &name, const Vector2 &value) const
 {
     int location = glGetUniformLocation(m_Id, name.c_str());

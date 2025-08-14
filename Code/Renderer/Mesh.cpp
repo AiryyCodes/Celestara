@@ -8,14 +8,13 @@
 Mesh::Mesh()
 {
     glGenVertexArrays(1, &m_Id);
-    glBindVertexArray(m_Id);
+    glGenBuffers(1, &m_VBO);
 }
 
 Mesh::Mesh(const std::vector<Vertex> &vertices)
     : m_Vertices(vertices), m_NumVertices(vertices.size())
 {
     glGenVertexArrays(1, &m_Id);
-    glBindVertexArray(m_Id);
 
     Init();
 }
@@ -33,6 +32,8 @@ void Mesh::InitVertices()
     {
         return;
     }
+
+    glBindVertexArray(m_Id);
 
     glBindBuffer(GL_ARRAY_BUFFER, m_VBO);
 
@@ -55,7 +56,7 @@ void Mesh::Unbind()
     glBindVertexArray(0);
 }
 
-void Mesh::SetVertices(const std::vector<Vertex> vertices)
+void Mesh::SetVertices(const std::vector<Vertex> &vertices)
 {
     m_Vertices = vertices;
     m_NumVertices = m_Vertices.size();
