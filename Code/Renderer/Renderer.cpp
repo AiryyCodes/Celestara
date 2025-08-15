@@ -28,6 +28,8 @@ bool Renderer::Init()
         return false;
     }
 
+    s_AnimationShader.Init("Assets/Shaders/Animation.vert", "Assets/Shaders/Animation.frag");
+
     return true;
 }
 
@@ -45,7 +47,7 @@ void Renderer::Begin(const Shader &shader)
     s_ActiveShader->Bind();
 }
 
-void Renderer::Submit(const Mesh &mesh, const Texture &texture, const Transform &transform)
+void Renderer::Submit(const Mesh &mesh, const Transform &transform)
 {
     if (!s_ActiveShader || !s_ActiveCamera)
         return;
@@ -59,7 +61,7 @@ void Renderer::Submit(const Mesh &mesh, const Texture &texture, const Transform 
     s_ActiveShader->SetUniform("u_View", s_ActiveCamera->GetViewMatrix());
     s_ActiveShader->SetUniform("u_Projection", s_ActiveCamera->GetProjectionMatrix());
 
-    texture.Bind();
+    mesh.GetTexture()->Bind();
     mesh.Bind();
     glDrawArrays(GL_TRIANGLES, 0, mesh.GetNumVertices());
 }

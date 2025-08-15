@@ -7,10 +7,12 @@
 class Shader
 {
 public:
+    Shader();
     Shader(const std::string &vertexPath, const std::string &fragmentPath);
     ~Shader();
 
     void Init();
+    void Init(const std::string &vertexPath, const std::string &fragmentPath);
 
     void Bind() const;
     static void Unbind();

@@ -27,17 +27,23 @@ public:
     static void Begin(const Shader &shader);
     static void End();
 
-    static void Submit(const Mesh &mesh, const Texture &texture, const Transform &transform);
+    static void Submit(const Mesh &mesh, const Transform &transform);
 
     static Window *GetMainWindow() { return s_MainWindow; }
     static void SetMainWindow(Window &window) { s_MainWindow = &window; }
 
+    static const Shader *GetActiveShader() { return s_ActiveShader; }
+
     static const Camera *GetActiveCamera() { return s_ActiveCamera; }
     static void SetActiveCamera(const Camera &camera) { s_ActiveCamera = &camera; }
+
+    static const Shader &GetAnimationShader() { return s_AnimationShader; }
 
 private:
     static inline Window *s_MainWindow = nullptr;
 
     static inline const Shader *s_ActiveShader = nullptr;
     static inline const Camera *s_ActiveCamera = nullptr;
+
+    static inline Shader s_AnimationShader;
 };

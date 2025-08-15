@@ -5,6 +5,10 @@
 #include <glad/gl.h>
 #include <glm/gtc/type_ptr.hpp>
 
+Shader::Shader()
+{
+}
+
 Shader::Shader(const std::string &vertexPath, const std::string &fragmentPath)
     : m_VertexPath(vertexPath), m_FragmentPath(fragmentPath)
 {
@@ -17,6 +21,18 @@ Shader::~Shader()
 
 void Shader::Init()
 {
+}
+
+void Shader::Init(const std::string &vertexPath, const std::string &fragmentPath)
+{
+    m_VertexPath = vertexPath;
+    m_FragmentPath = fragmentPath;
+
+    if (m_VertexPath.empty() || m_FragmentPath.empty())
+    {
+        return;
+    }
+
     unsigned int vertexId = CompileShader(m_VertexPath, "vertex", GL_VERTEX_SHADER);
     if (!vertexId)
     {

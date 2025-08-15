@@ -29,6 +29,8 @@ void Texture::Init()
     glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_MIN_FILTER, GL_NEAREST);
     glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_MAG_FILTER, GL_NEAREST);
 
+    stbi_set_flip_vertically_on_load(true);
+
     int width, height, numChannels;
     unsigned char *data = stbi_load(m_Path.c_str(), &width, &height, &numChannels, 0);
     if (data)
