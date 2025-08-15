@@ -6,7 +6,8 @@
 #include <glm/geometric.hpp>
 
 Player::Player()
-    : m_IdleAnimation(4, 0.15f), m_WalkAnimation(8, 0.1f)
+    : m_IdleSprite("Assets/Textures/Player/Idle.png", 16, 16, 4, 0.15f),
+      m_WalkSprite("Assets/Textures/Player/Walk.png", 16, 16, 8, 0.1f)
 {
 }
 
@@ -17,22 +18,12 @@ void Player::Init()
     m_Camera.SetZoom(0.25f);
 
     Renderer::SetActiveCamera(m_Camera);
-
-    m_IdleSheetTexture.SetTexture("Assets/Textures/Player/Idle.png");
-    m_WalkSheetTexture.SetTexture("Assets/Textures/Player/Walk.png");
-
-    int spriteSize = 16;
-    m_IdleSheet = CreateRef<Spritesheet>(m_IdleSheetTexture, spriteSize, spriteSize);
-    m_WalkSheet = CreateRef<Spritesheet>(m_WalkSheetTexture, spriteSize, spriteSize);
-
-    m_Mesh.SetTexture(m_IdleSheetTexture);
-    m_Mesh.SetVertices(QUAD_VERTICES);
 }
 
 void Player::Update(float delta)
 {
-    m_IdleAnimation.Update(delta);
-    m_WalkAnimation.Update(delta);
+    m_IdleSprite.Update(delta);
+    m_WalkSprite.Update(delta);
 
     float speed = m_Speed;
 
@@ -78,37 +69,22 @@ void Player::Render()
     const auto &animShader = Renderer::GetAnimationShader();
     Renderer::Begin(animShader);
 
+    int rowIndex = 2; // default (idle facing down)
+
     if (m_Velocity.y > 0.0f)
-    {
-        animShader.SetUniform("u_RowIndex", 3);
-    }
-    if (m_Velocity.y < 0.0f)
-    {
-        animShader.SetUniform("u_RowIndex", 2);
-    }
-    if (m_Velocity.x < 0.0f)
-    {
-        animShader.SetUniform("u_RowIndex", 1);
-    }
-    if (m_Velocity.x > 0.0f)
-    {
-        animShader.SetUniform("u_RowIndex", 0);
-    }
+        rowIndex = 3; // up
+    else if (m_Velocity.y < 0.0f)
+        rowIndex = 2; // down
+    else if (m_Velocity.x < 0.0f)
+        rowIndex = 1; // left
+    else if (m_Velocity.x > 0.0f)
+        rowIndex = 0; // right
+
     if (m_Direction == Direction::None)
-    {
-        animShader.SetUniform("u_RowIndex", 2);
-    }
+        rowIndex = 2; // force idle down
 
-    if (glm::length(m_Velocity) > 0.0f)
-    {
-        m_Mesh.SetTexture(m_WalkSheetTexture);
-        m_WalkAnimation.Render(*m_WalkSheet.get());
-    }
-    else
-    {
-        m_Mesh.SetTexture(m_IdleSheetTexture);
-        m_IdleAnimation.Render(*m_IdleSheet.get());
-    }
+    animShader.SetUniform("u_RowIndex", rowIndex);
 
-    Renderer::Submit(m_Mesh, GetTransform());
+    const bool isMoving = glm::length(m_Velocity) > 0.0f;
+    (isMoving ? m_WalkSprite : m_IdleSprite).Render(GetTransform());
 }
