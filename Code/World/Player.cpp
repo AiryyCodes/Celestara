@@ -3,9 +3,13 @@
 #include "Math/Math.h"
 #include "Renderer/Renderer.h"
 
+#include <glm/geometric.hpp>
+
 void Player::Init()
 {
     GetTransform().SetPosition(Vector2(0.0f, 0.0f));
+
+    m_Camera.SetZoom(0.25f);
 
     Renderer::SetActiveCamera(m_Camera);
 
@@ -13,24 +17,34 @@ void Player::Init()
     m_Texture.SetTexture("Assets/Textures/Grass.png");
 }
 
-void Player::Update()
+void Player::Update(float delta)
 {
+    float speed = m_Speed;
+
+    Vector2 velocity = Vector2(0.0f, 0.0f);
     if (Input::IsKeyDown(GLFW_KEY_W))
     {
-        m_Camera.GetTransform().Translate(0.0f, m_Speed);
+        velocity.y += speed;
     }
     if (Input::IsKeyDown(GLFW_KEY_S))
     {
-        m_Camera.GetTransform().Translate(0.0f, -m_Speed);
+        velocity.y -= speed;
     }
 
     if (Input::IsKeyDown(GLFW_KEY_A))
     {
-        m_Camera.GetTransform().Translate(-m_Speed, 0.0f);
+        velocity.x -= speed;
     }
     if (Input::IsKeyDown(GLFW_KEY_D))
     {
-        m_Camera.GetTransform().Translate(m_Speed, 0.0f);
+        velocity.x += speed;
+    }
+
+    if (glm::length(velocity) > 0.0001f)
+    {
+        velocity = glm::normalize(velocity);
+
+        m_Camera.GetTransform().Translate(velocity * delta * m_Speed);
     }
 }
 

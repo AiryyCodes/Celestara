@@ -12,6 +12,9 @@ public:
     Matrix4 GetViewMatrix() const;
     Matrix4 GetProjectionMatrix() const;
 
+    float GetZoom() const { return m_Zoom; }
+    void SetZoom(float zoom) { m_Zoom = zoom; }
+
 private:
     float m_Zoom = 1.0f;
 

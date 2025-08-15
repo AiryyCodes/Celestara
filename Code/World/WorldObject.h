@@ -6,7 +6,7 @@ class WorldObject
 {
 public:
     virtual void Init() {}
-    virtual void Update() {}
+    virtual void Update(float delta) {}
     virtual void Render() {}
 
     Transform &GetTransform() { return m_Transform; }
