@@ -24,12 +24,16 @@ public:
     static bool Init();
 
     static void Begin(const Shader &shader, const Camera &camera);
+    static void Begin(const Shader &shader);
     static void End();
 
     static void Submit(const Mesh &mesh, const Texture &texture, const Transform &transform);
 
     static Window *GetMainWindow() { return s_MainWindow; }
     static void SetMainWindow(Window &window) { s_MainWindow = &window; }
+
+    static const Camera *GetActiveCamera() { return s_ActiveCamera; }
+    static void SetActiveCamera(const Camera &camera) { s_ActiveCamera = &camera; }
 
 private:
     static inline Window *s_MainWindow = nullptr;

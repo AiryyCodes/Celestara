@@ -1,4 +1,5 @@
 #include "Window.h"
+#include "Input.h"
 
 #include <GLFW/glfw3.h>
 #include <cstdio>
@@ -23,6 +24,10 @@ void Window::Init()
                               { Window *window = static_cast<Window *>(glfwGetWindowUserPointer(handle));
                               window->m_Width = width;
                               window->m_Height = height; });
+
+    glfwSetKeyCallback(m_Handle, [](GLFWwindow *handle, int key, int scancode, int action, int mods)
+                       { Input::s_KeysDown[key] = action == GLFW_PRESS || action == GLFW_REPEAT;
+                       Input::s_KeysJustDown[key] = action == GLFW_PRESS; });
 }
 
 void Window::SwapBuffers() const

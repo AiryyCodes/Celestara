@@ -39,6 +39,12 @@ void Renderer::Begin(const Shader &shader, const Camera &camera)
     s_ActiveCamera = &camera;
 }
 
+void Renderer::Begin(const Shader &shader)
+{
+    s_ActiveShader = &shader;
+    s_ActiveShader->Bind();
+}
+
 void Renderer::Submit(const Mesh &mesh, const Texture &texture, const Transform &transform)
 {
     if (!s_ActiveShader || !s_ActiveCamera)

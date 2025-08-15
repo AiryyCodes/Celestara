@@ -1,14 +1,15 @@
+#include <cstdio>
+#include <cstdlib>
+#include <glad/gl.h>
+#include <GLFW/glfw3.h>
+
+#include "Input.h"
 #include "Math/Math.h"
 #include "Renderer/Camera.h"
 #include "Renderer/Renderer.h"
 #include "Renderer/Shader.h"
 #include "Renderer/Window.h"
 #include "World/Player.h"
-
-#include <cstdio>
-#include <cstdlib>
-#include <glad/gl.h>
-#include <GLFW/glfw3.h>
 
 int main()
 {
@@ -37,9 +38,6 @@ int main()
     Player player;
     player.Init();
 
-    Camera camera;
-    camera.GetTransform().SetPosition(Vector2(0.0f, 1.0f));
-
     while (!window.IsClosing())
     {
         glfwPollEvents();
@@ -48,7 +46,9 @@ int main()
         glClearColor(0, 0, 0, 1);
         glViewport(0, 0, window.GetWidth(), window.GetHeight());
 
-        Renderer::Begin(shader, camera);
+        player.Update();
+
+        Renderer::Begin(shader);
 
         player.Render();
 

@@ -5,6 +5,9 @@
 class Transform
 {
 public:
+    void Translate(float x, float y);
+    void Translate(Vector2 translation);
+
     const Vector2 &GetPosition() const { return m_Position; }
     void SetPosition(const Vector2 &position) { m_Position = position; }
 
