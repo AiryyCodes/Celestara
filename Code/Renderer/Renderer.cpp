@@ -28,6 +28,7 @@ bool Renderer::Init()
         return false;
     }
 
+    s_MainShader.Init("Assets/Shaders/Main.vert", "Assets/Shaders/Main.frag");
     s_AnimationShader.Init("Assets/Shaders/Animation.vert", "Assets/Shaders/Animation.frag");
 
     return true;

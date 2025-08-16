@@ -73,11 +73,11 @@ void Player::Render()
 
     if (m_Velocity.y > 0.0f)
         rowIndex = 3; // up
-    else if (m_Velocity.y < 0.0f)
+    if (m_Velocity.y < 0.0f)
         rowIndex = 2; // down
-    else if (m_Velocity.x < 0.0f)
+    if (m_Velocity.x < 0.0f)
         rowIndex = 1; // left
-    else if (m_Velocity.x > 0.0f)
+    if (m_Velocity.x > 0.0f)
         rowIndex = 0; // right
 
     if (m_Direction == Direction::None)

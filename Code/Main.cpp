@@ -7,6 +7,7 @@
 #include "Renderer/Renderer.h"
 #include "Renderer/Shader.h"
 #include "Renderer/Window.h"
+#include "World/Grid.h"
 #include "World/Player.h"
 
 int main()
@@ -30,11 +31,11 @@ int main()
         return EXIT_FAILURE;
     }
 
-    Shader shader("Assets/Shaders/Main.vert", "Assets/Shaders/Main.frag");
-    shader.Init();
-
     Player player;
     player.Init();
+
+    Grid grid;
+    grid.Init();
 
     float now = 0.0f;
     float last = 0.0f;
@@ -53,8 +54,9 @@ int main()
 
         player.Update(delta);
 
-        Renderer::Begin(shader);
+        Renderer::Begin(Renderer::GetMainShader());
 
+        grid.Render();
         player.Render();
 
         Renderer::End();

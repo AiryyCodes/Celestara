@@ -37,6 +37,7 @@ public:
     static const Camera *GetActiveCamera() { return s_ActiveCamera; }
     static void SetActiveCamera(const Camera &camera) { s_ActiveCamera = &camera; }
 
+    static const Shader &GetMainShader() { return s_MainShader; }
     static const Shader &GetAnimationShader() { return s_AnimationShader; }
 
 private:
@@ -45,5 +46,6 @@ private:
     static inline const Shader *s_ActiveShader = nullptr;
     static inline const Camera *s_ActiveCamera = nullptr;
 
+    static inline Shader s_MainShader;
     static inline Shader s_AnimationShader;
 };
