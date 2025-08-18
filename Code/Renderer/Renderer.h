@@ -4,7 +4,6 @@
 #include "Renderer/Camera.h"
 #include "Renderer/Mesh.h"
 #include "Renderer/Shader.h"
-#include "Renderer/Texture.h"
 #include "Renderer/Window.h"
 
 static std::vector<Vertex> QUAD_VERTICES = {
@@ -22,6 +21,7 @@ class Renderer
 public:
     static bool PreInit();
     static bool Init();
+    static void Shutdown();
 
     static void Begin(const Shader &shader, const Camera &camera);
     static void Begin(const Shader &shader);

@@ -64,5 +64,7 @@ int main()
         window.SwapBuffers();
     }
 
+    Renderer::Shutdown();
+
     return EXIT_SUCCESS;
 }

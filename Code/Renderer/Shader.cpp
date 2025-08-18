@@ -3,6 +3,7 @@
 #include "Logger.h"
 
 #include <glad/gl.h>
+#include <GLFW/glfw3.h>
 #include <glm/gtc/type_ptr.hpp>
 
 Shader::Shader()
@@ -16,11 +17,20 @@ Shader::Shader(const std::string &vertexPath, const std::string &fragmentPath)
 
 Shader::~Shader()
 {
-    glDeleteProgram(m_Id);
+    Destroy();
 }
 
 void Shader::Init()
 {
+}
+
+void Shader::Destroy()
+{
+    if (m_Id != 0)
+    {
+        glDeleteProgram(m_Id);
+        m_Id = 0;
+    }
 }
 
 void Shader::Init(const std::string &vertexPath, const std::string &fragmentPath)

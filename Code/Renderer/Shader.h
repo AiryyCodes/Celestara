@@ -13,6 +13,7 @@ public:
 
     void Init();
     void Init(const std::string &vertexPath, const std::string &fragmentPath);
+    void Destroy();
 
     void Bind() const;
     static void Unbind();

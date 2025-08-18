@@ -34,6 +34,12 @@ bool Renderer::Init()
     return true;
 }
 
+void Renderer::Shutdown()
+{
+    s_MainShader.Destroy();
+    s_AnimationShader.Destroy();
+}
+
 void Renderer::Begin(const Shader &shader, const Camera &camera)
 {
     s_ActiveShader = &shader;
