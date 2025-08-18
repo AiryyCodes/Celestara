@@ -6,9 +6,15 @@
 #include <utility>
 #include <vector>
 
+Grid::Grid()
+    : m_Texture(16, 16)
+{
+}
+
 void Grid::Init()
 {
-    m_Texture.SetTexture("Assets/Textures/Grass.png");
+    m_Texture.AddTexture("Assets/Textures/Tiles/Grass.png");
+    m_Texture.AddTexture("Assets/Textures/Tiles/Metal1.png");
 
     for (int x = 0; x < 5; x++)
     {
@@ -40,6 +46,7 @@ void Grid::BuildMesh()
             Vertex newVertex;
             newVertex.Position = vertex.Position + Vector2(position.x, position.y);
             newVertex.UV = vertex.UV;
+            newVertex.Layer = 1;
 
             vertices.push_back(newVertex);
         }

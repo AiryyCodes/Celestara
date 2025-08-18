@@ -11,6 +11,8 @@
 class Grid : WorldObject
 {
 public:
+    Grid();
+
     void Init() override;
     void Render() override;
 
@@ -20,6 +22,6 @@ private:
 private:
     std::unordered_map<Vector2i, Tile> m_Tiles;
 
-    Texture m_Texture;
+    Texture3D m_Texture;
     Mesh m_Mesh;
 };

@@ -44,6 +44,9 @@ void Mesh::InitVertices()
 
     glEnableVertexAttribArray(1);
     glVertexAttribPointer(1, 2, GL_FLOAT, false, sizeof(Vertex), (void *)(offsetof(Vertex, UV)));
+
+    glEnableVertexAttribArray(2);
+    glVertexAttribIPointer(2, 1, GL_INT, sizeof(Vertex), (void *)(offsetof(Vertex, Layer)));
 }
 
 void Mesh::Bind() const

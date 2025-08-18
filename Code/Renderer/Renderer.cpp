@@ -68,9 +68,20 @@ void Renderer::Submit(const Mesh &mesh, const Transform &transform)
     s_ActiveShader->SetUniform("u_View", s_ActiveCamera->GetViewMatrix());
     s_ActiveShader->SetUniform("u_Projection", s_ActiveCamera->GetProjectionMatrix());
 
+    switch (mesh.GetTexture()->GetType())
+    {
+    case TextureType::Texture2D:
+        s_ActiveShader->SetUniform("u_IsSamplerArray", false);
+    case TextureType::Texture2DArray:
+        s_ActiveShader->SetUniform("u_IsSamplerArray", true);
+    }
+
     mesh.GetTexture()->Bind();
     mesh.Bind();
     glDrawArrays(GL_TRIANGLES, 0, mesh.GetNumVertices());
+
+    Texture::Unbind();
+    Texture3D::Unbind();
 }
 
 void Renderer::End()
