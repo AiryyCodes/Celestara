@@ -4,6 +4,7 @@
 #include <GLFW/glfw3.h>
 
 #include "Input.h"
+#include "Registry/TileRegistry.h"
 #include "Renderer/Renderer.h"
 #include "Renderer/Shader.h"
 #include "Renderer/Window.h"
@@ -30,6 +31,8 @@ int main()
         printf("Failed to initialize renderer\n");
         return EXIT_FAILURE;
     }
+
+    TileRegistry::Init();
 
     Player player;
     player.Init();

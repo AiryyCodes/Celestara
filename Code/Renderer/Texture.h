@@ -54,7 +54,7 @@ public:
     void Bind() const override;
     static void Unbind();
 
-    void AddTexture(const std::string &path);
+    int AddTexture(const std::string &path);
 
     int GetMaxWidth() const { return m_MaxWidth; }
     int GetMaxHeight() const { return m_MaxHeight; }

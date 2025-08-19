@@ -1,29 +1,30 @@
 #include "World/Grid.h"
 #include "Math/Math.h"
+#include "Memory.h"
+#include "Registry/TileRegistry.h"
 #include "Renderer/Renderer.h"
 #include "Renderer/Vertex.h"
 #include "World/Tile.h"
+
 #include <utility>
 #include <vector>
 
-Grid::Grid()
-    : m_Texture(16, 16)
-{
-}
-
 void Grid::Init()
 {
-    m_Texture.AddTexture("Assets/Textures/Tiles/Grass.png");
-    m_Texture.AddTexture("Assets/Textures/Tiles/Metal1.png");
-
     for (int x = 0; x < 5; x++)
     {
         for (int y = 0; y < 5; y++)
         {
             Vector2i position(x, y);
 
-            Tile tile(position);
-            m_Tiles.emplace(std::make_pair(position, tile));
+            Ref<Tile> tile = TileRegistry::GetTile("metal");
+            if (x == 2 && y == 2)
+            {
+                tile = TileRegistry::GetTile("air");
+            }
+
+            TileState state(tile, position);
+            m_Tiles.emplace(std::make_pair(position, state));
         }
     }
 
@@ -46,12 +47,12 @@ void Grid::BuildMesh()
             Vertex newVertex;
             newVertex.Position = vertex.Position + Vector2(position.x, position.y);
             newVertex.UV = vertex.UV;
-            newVertex.Layer = 1;
+            newVertex.Layer = tile.GetTextureLayer();
 
-            vertices.push_back(newVertex);
+            vertices.emplace_back(newVertex);
         }
     }
 
-    m_Mesh.SetTexture(m_Texture);
+    m_Mesh.SetTexture(TileRegistry::GetTextures());
     m_Mesh.SetVertices(vertices);
 }

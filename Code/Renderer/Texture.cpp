@@ -160,10 +160,12 @@ void Texture3D::Unbind()
     glBindTexture(GL_TEXTURE_2D_ARRAY, 0);
 }
 
-void Texture3D::AddTexture(const std::string &path)
+int Texture3D::AddTexture(const std::string &path)
 {
     m_Paths.push_back(path);
 
     // Update the texture data with the new textures
     Init();
+
+    return m_Paths.size() - 1;
 }
