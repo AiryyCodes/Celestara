@@ -1,8 +1,15 @@
 #include "World/Player.h"
+#include "Game.h"
 #include "Input.h"
+#include "Logger.h"
 #include "Math/Math.h"
+#include "Memory.h"
 #include "Renderer/Renderer.h"
+#include "World/World.h"
 
+#include <box2d/box2d.h>
+#include <box2d/math_functions.h>
+#include <box2d/types.h>
 #include <glm/geometric.hpp>
 
 Player::Player()
@@ -13,11 +20,34 @@ Player::Player()
 
 void Player::Init()
 {
-    GetTransform().SetPosition(Vector2(0.0f, 0.0f));
+    Ref<World> world = Game::Get().GetWorld();
+
+    GetTransform().SetPosition(Vector2(2.0f, 2.0f));
 
     m_Camera.SetZoom(0.25f);
 
     Renderer::SetActiveCamera(m_Camera);
+
+    Vector2 posPixels = GetTransform().GetPosition();
+
+    b2BodyDef bodyDef = b2DefaultBodyDef();
+    bodyDef.type = b2_dynamicBody;
+    bodyDef.position = (b2Vec2){posPixels.x,
+                                posPixels.y};
+    m_BodyId = b2CreateBody(world->GetPhysicsId(), &bodyDef);
+
+    float radius = 0.45f;
+
+    b2Circle circle;
+    circle.center = {0.0f, 0.0f};
+    circle.radius = radius;
+
+    b2ShapeDef shapeDef = b2DefaultShapeDef();
+    shapeDef.density = 1.0f;
+    shapeDef.material.friction = 0.3f;
+
+    // Attach the circle to the body
+    b2CreateCircleShape(m_BodyId, &shapeDef, &circle);
 }
 
 void Player::Update(float delta)
@@ -25,42 +55,48 @@ void Player::Update(float delta)
     m_IdleSprite.Update(delta);
     m_WalkSprite.Update(delta);
 
-    float speed = m_Speed;
-
     m_Velocity = Vector2(0.0f, 0.0f);
+
+    m_Camera.GetTransform().SetPosition(GetTransform().GetPosition());
+
     if (Input::IsKeyDown(GLFW_KEY_W))
     {
-        m_Direction = Direction::North;
         m_Velocity.y += 1.0f;
+        m_Direction = Direction::North;
     }
     if (Input::IsKeyDown(GLFW_KEY_S))
     {
+        m_Velocity.y -= 1.0f;
         m_Direction = Direction::South;
-        m_Velocity.y += -1.0f;
     }
-
     if (Input::IsKeyDown(GLFW_KEY_A))
     {
+        m_Velocity.x -= 1.0f;
         m_Direction = Direction::West;
-        m_Velocity.x += -1.0f;
     }
     if (Input::IsKeyDown(GLFW_KEY_D))
     {
-        m_Direction = Direction::East;
         m_Velocity.x += 1.0f;
+        m_Direction = Direction::East;
     }
 
     if (glm::length(m_Velocity) < 0.0001f)
     {
         m_Direction = Direction::None;
+        b2Body_SetLinearVelocity(m_BodyId, {0.0f, 0.0f});
         return;
     }
 
-    m_Velocity = glm::normalize(m_Velocity);
-    m_Velocity *= m_Speed;
-    m_Velocity *= delta;
+    m_Velocity = glm::normalize(m_Velocity) * m_Speed;
 
-    GetTransform().Translate(m_Velocity);
+    b2Vec2 vel = {m_Velocity.x, m_Velocity.y};
+    b2Body_SetLinearVelocity(m_BodyId, vel);
+
+    b2Transform bodyTransform = b2Body_GetTransform(m_BodyId);
+    GetTransform().SetPosition(Vector2(
+        bodyTransform.p.x,
+        bodyTransform.p.y));
+
     m_Camera.GetTransform().SetPosition(GetTransform().GetPosition());
 }
 
@@ -71,7 +107,7 @@ void Player::Render()
 
     int rowIndex = 2; // default (idle facing down)
 
-    if (m_Velocity.y > 0.0f)
+    if (m_Direction == Direction::North)
         rowIndex = 3; // up
     if (m_Velocity.y < 0.0f)
         rowIndex = 2; // down

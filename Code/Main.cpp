@@ -3,13 +3,11 @@
 #include <glad/gl.h>
 #include <GLFW/glfw3.h>
 
+#include "Game.h"
 #include "Input.h"
 #include "Registry/TileRegistry.h"
 #include "Renderer/Renderer.h"
-#include "Renderer/Shader.h"
 #include "Renderer/Window.h"
-#include "World/Grid.h"
-#include "World/Player.h"
 
 int main()
 {
@@ -34,11 +32,8 @@ int main()
 
     TileRegistry::Init();
 
-    Player player;
-    player.Init();
-
-    Grid grid;
-    grid.Init();
+    Game game;
+    game.Init();
 
     float now = 0.0f;
     float last = 0.0f;
@@ -55,12 +50,11 @@ int main()
         glClearColor(0, 0, 0, 1);
         glViewport(0, 0, window.GetWidth(), window.GetHeight());
 
-        player.Update(delta);
+        game.Update(delta);
 
         Renderer::Begin(Renderer::GetMainShader());
 
-        grid.Render();
-        player.Render();
+        game.Render();
 
         Renderer::End();
 

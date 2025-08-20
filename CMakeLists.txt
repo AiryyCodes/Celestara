@@ -18,5 +18,6 @@ add_subdirectory("Deps/glad")
 add_subdirectory("Deps/stb")
 find_package(glm REQUIRED)
 find_package(spdlog REQUIRED)
+find_package(box2d REQUIRED)
 
-target_link_libraries(${PROJECT_NAME} PRIVATE glfw glad glm spdlog::spdlog stb)
+target_link_libraries(${PROJECT_NAME} PRIVATE glfw glad glm spdlog::spdlog stb box2d)

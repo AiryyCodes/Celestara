@@ -28,6 +28,9 @@ bool Renderer::Init()
         return false;
     }
 
+    glEnable(GL_BLEND);
+    glBlendFunc(GL_SRC_ALPHA, GL_ONE_MINUS_SRC_ALPHA);
+
     s_MainShader.Init("Assets/Shaders/Main.vert", "Assets/Shaders/Main.frag");
     s_AnimationShader.Init("Assets/Shaders/Animation.vert", "Assets/Shaders/Animation.frag");
 

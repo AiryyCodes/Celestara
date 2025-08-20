@@ -1,14 +1,11 @@
 #pragma once
 
-#include "Graphics/Animation.h"
 #include "Math/Math.h"
-#include "Memory.h"
 #include "Renderer/Camera.h"
-#include "Renderer/Mesh.h"
 #include "Renderer/Sprite.h"
-#include "Renderer/Texture.h"
 #include "Util/Direction.h"
 #include "World/WorldObject.h"
+#include <box2d/id.h>
 
 class Player : public WorldObject
 {
@@ -20,7 +17,7 @@ public:
     virtual void Render() override;
 
 private:
-    float m_Speed = 2.5f;
+    float m_Speed = 1.0f;
     Vector2 m_Velocity = Vector2(0.0f, 0.0f);
 
     Direction m_Direction;
@@ -29,4 +26,6 @@ private:
 
     AnimatedSprite m_IdleSprite;
     AnimatedSprite m_WalkSprite;
+
+    b2BodyId m_BodyId;
 };

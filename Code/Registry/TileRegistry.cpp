@@ -6,7 +6,7 @@ void TileRegistry::Init()
 {
     s_Textures = CreateRef<Texture3D>(16, 16);
 
-    Register("air", CreateScope<Tile>());
+    Register("air", CreateScope<Tile>(true));
     Register("metal", CreateScope<Tile>());
 }
 

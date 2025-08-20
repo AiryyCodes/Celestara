@@ -1,11 +1,16 @@
 #include "World/Grid.h"
+#include "Game.h"
 #include "Math/Math.h"
 #include "Memory.h"
 #include "Registry/TileRegistry.h"
 #include "Renderer/Renderer.h"
 #include "Renderer/Vertex.h"
+#include "Util/Direction.h"
 #include "World/Tile.h"
+#include "World/World.h"
 
+#include <box2d/box2d.h>
+#include <box2d/types.h>
 #include <utility>
 #include <vector>
 
@@ -18,13 +23,27 @@ void Grid::Init()
             Vector2i position(x, y);
 
             Ref<Tile> tile = TileRegistry::GetTile("metal");
-            if (x == 2 && y == 2)
-            {
-                tile = TileRegistry::GetTile("air");
-            }
 
             TileState state(tile, position);
+            CreateTileBody(position, &state);
+
             m_Tiles.emplace(std::make_pair(position, state));
+        }
+    }
+
+    for (const auto &[pos, tile] : m_Tiles)
+    {
+        for (Direction direction : DIRECTIONS)
+        {
+            Vector2i relative = GetRelativeVector(pos, direction);
+
+            const TileState *state = GetState(relative.x, relative.y);
+
+            // If tile is outside of boundaries/not placed, create a collider
+            if (state == nullptr)
+            {
+                CreateTileBody(relative, state);
+            }
         }
     }
 
@@ -55,4 +74,32 @@ void Grid::BuildMesh()
 
     m_Mesh.SetTexture(TileRegistry::GetTextures());
     m_Mesh.SetVertices(vertices);
+}
+
+void Grid::CreateTileBody(const Vector2i &position, const TileState *tile)
+{
+    Ref<World> world = Game::Get().GetWorld();
+    if (!world)
+        return;
+
+    // Air tiles should have collisions
+    if (tile && !tile->IsAir())
+        return;
+
+    b2BodyDef bodyDef = b2DefaultBodyDef();
+    bodyDef.position = (b2Vec2){(float)position.x, (float)position.y};
+
+    b2BodyId bodyId = b2CreateBody(world->GetPhysicsId(), &bodyDef);
+    b2Polygon box = b2MakeBox(0.5f, 0.5f);
+
+    b2ShapeDef shapeDef = b2DefaultShapeDef();
+    b2CreatePolygonShape(bodyId, &shapeDef, &box);
+
+    m_Bodies[position] = bodyId;
+}
+
+const TileState *Grid::GetState(int x, int y)
+{
+    auto it = m_Tiles.find(Vector2i(x, y));
+    return it != m_Tiles.end() ? &it->second : nullptr;
 }
