@@ -107,7 +107,7 @@ void Player::Render()
 
     int rowIndex = 2; // default (idle facing down)
 
-    if (m_Direction == Direction::North)
+    if (m_Velocity.y > 0.0f)
         rowIndex = 3; // up
     if (m_Velocity.y < 0.0f)
         rowIndex = 2; // down
