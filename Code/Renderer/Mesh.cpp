@@ -15,14 +15,13 @@ Mesh::Mesh(const std::vector<Vertex> &vertices)
     : m_Vertices(vertices), m_NumVertices(vertices.size())
 {
     glGenVertexArrays(1, &m_Id);
+    glGenBuffers(1, &m_VBO);
 
     Init();
 }
 
 void Mesh::Init()
 {
-    glGenBuffers(1, &m_VBO);
-
     InitVertices();
 }
 

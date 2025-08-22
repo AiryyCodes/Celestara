@@ -3,6 +3,9 @@ project(Celestara)
 
 set(CMAKE_EXPORT_COMPILE_COMMANDS ON)
 
+set(CMAKE_CXX_STANDARD 20)
+set(CMAKE_CXX_EXTENSIONS ON)
+
 file(GLOB_RECURSE ASTRALIS_SOURCES
     "Code/**.cpp"
 )

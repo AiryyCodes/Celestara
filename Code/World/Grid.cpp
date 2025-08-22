@@ -61,7 +61,9 @@ void Grid::Render()
 
 void Grid::BuildMesh()
 {
-    std::vector<Vertex> vertices(m_Tiles.size() * 6);
+    std::vector<Vertex> vertices;
+    // vertices.reserve(m_Tiles.size() * 6);
+
     for (const auto &[position, tile] : m_Tiles)
     {
         for (const auto &vertex : QUAD_VERTICES)

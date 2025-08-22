@@ -4,7 +4,7 @@
 
 struct Vertex
 {
-    Vector2 Position;
-    Vector2 UV;
+    Vector2f Position;
+    Vector2f UV;
     int Layer;
 };

@@ -1,4 +1,5 @@
 #include "Renderer.h"
+#include "Logger.h"
 #include "Math/Math.h"
 #include "Renderer/Camera.h"
 #include "Renderer/Texture.h"
@@ -30,6 +31,9 @@ bool Renderer::Init()
 
     glEnable(GL_BLEND);
     glBlendFunc(GL_SRC_ALPHA, GL_ONE_MINUS_SRC_ALPHA);
+
+    glDisable(GL_CULL_FACE);
+    glDisable(GL_DEPTH_TEST);
 
     s_MainShader.Init("Assets/Shaders/Main.vert", "Assets/Shaders/Main.frag");
     s_AnimationShader.Init("Assets/Shaders/Animation.vert", "Assets/Shaders/Animation.frag");
@@ -71,17 +75,11 @@ void Renderer::Submit(const Mesh &mesh, const Transform &transform)
     s_ActiveShader->SetUniform("u_View", s_ActiveCamera->GetViewMatrix());
     s_ActiveShader->SetUniform("u_Projection", s_ActiveCamera->GetProjectionMatrix());
 
-    switch (mesh.GetTexture()->GetType())
-    {
-    case TextureType::Texture2D:
-        s_ActiveShader->SetUniform("u_IsSamplerArray", false);
-    case TextureType::Texture2DArray:
-        s_ActiveShader->SetUniform("u_IsSamplerArray", true);
-    }
-
     mesh.GetTexture()->Bind();
     mesh.Bind();
     glDrawArrays(GL_TRIANGLES, 0, mesh.GetNumVertices());
+
+    mesh.Unbind();
 
     Texture::Unbind();
     Texture3D::Unbind();

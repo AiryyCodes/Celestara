@@ -48,7 +48,7 @@ int main()
 
         glClear(GL_COLOR_BUFFER_BIT);
         glClearColor(0, 0, 0, 1);
-        glViewport(0, 0, window.GetWidth(), window.GetHeight());
+        glViewport(0, 0, window.GetFramebufferSize().x, window.GetFramebufferSize().y);
 
         game.Update(delta);
 

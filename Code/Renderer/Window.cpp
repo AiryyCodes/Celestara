@@ -1,5 +1,6 @@
 #include "Window.h"
 #include "Input.h"
+#include "Math/Math.h"
 
 #include <GLFW/glfw3.h>
 #include <cstdio>
@@ -8,8 +9,14 @@ void Window::Init()
 {
     glfwDefaultWindowHints();
     glfwWindowHint(GLFW_CONTEXT_VERSION_MAJOR, 4);
-    glfwWindowHint(GLFW_CONTEXT_VERSION_MINOR, 4);
+    glfwWindowHint(GLFW_CONTEXT_VERSION_MINOR, 1);
     glfwWindowHint(GLFW_RESIZABLE, true);
+
+#ifdef __APPLE__
+    /* We need to explicitly ask for a 3.2 context on OS X */
+    glfwWindowHint(GLFW_OPENGL_FORWARD_COMPAT, GL_TRUE);
+    glfwWindowHint(GLFW_OPENGL_PROFILE, GLFW_OPENGL_CORE_PROFILE);
+#endif
 
     m_Handle = glfwCreateWindow(m_Width, m_Height, m_Title.c_str(), nullptr, nullptr);
     if (!m_Handle)
@@ -56,4 +63,13 @@ void Window::SetHeight(int height)
 {
     m_Height = height;
     glfwSetWindowSize(m_Handle, m_Width, m_Height);
+}
+
+Vector2i Window::GetFramebufferSize() const
+{
+    int width;
+    int height;
+    glfwGetFramebufferSize(m_Handle, &width, &height);
+
+    return Vector2i(width, height);
 }

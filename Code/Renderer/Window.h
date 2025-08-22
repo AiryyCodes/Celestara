@@ -1,5 +1,7 @@
 #pragma once
 
+#include "Math/Math.h"
+
 #include <string>
 
 struct GLFWwindow;
@@ -24,6 +26,8 @@ public:
 
     int GetHeight() const { return m_Height; }
     void SetHeight(int height);
+
+    Vector2i GetFramebufferSize() const;
 
     GLFWwindow *GetHandle() const { return m_Handle; }
 

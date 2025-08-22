@@ -1,11 +1,11 @@
-#version 440 core
+#version 410 core
 
 layout(location = 0) in vec2 a_Position;
 layout(location = 1) in vec2 a_UV;
 layout(location = 2) in int a_Layer;
 
 out vec2 v_UV;
-out flat int v_Layer;
+flat out int v_Layer;
 
 uniform mat4 u_Model;
 uniform mat4 u_View;
