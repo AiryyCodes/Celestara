@@ -2,6 +2,7 @@
 
 #include "Math/Math.h"
 #include "Renderer/Mesh.h"
+#include "Util/Direction.h"
 #include "World/Tile.h"
 #include "World/WorldObject.h"
 
@@ -19,7 +20,8 @@ public:
 private:
     void BuildMesh();
 
-    void CreateTileBody(const Vector2i &position, const TileState *tile);
+    void CreateTileCollider(const Vector2i &position, const TileState *tile);
+    void CreateEdgeCollider(const Vector2i &position, Direction direction);
 
 private:
     std::unordered_map<Vector2i, TileState> m_Tiles;

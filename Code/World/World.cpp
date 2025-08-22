@@ -1,4 +1,5 @@
 #include "World/World.h"
+#include "Logger.h"
 #include "World/Grid.h"
 
 #include <box2d/box2d.h>

@@ -4,10 +4,12 @@
 #include "Logger.h"
 #include "Math/Math.h"
 #include "Memory.h"
+#include "Physics/Category.h"
 #include "Renderer/Renderer.h"
 #include "World/World.h"
 
 #include <box2d/box2d.h>
+#include <box2d/collision.h>
 #include <box2d/math_functions.h>
 #include <box2d/types.h>
 #include <glm/geometric.hpp>
@@ -16,6 +18,11 @@ Player::Player()
     : m_IdleSprite("Assets/Textures/Player/Idle.png", 16, 16, 4, 0.15f),
       m_WalkSprite("Assets/Textures/Player/Walk.png", 16, 16, 8, 0.1f)
 {
+    Ref<World> world = Game::Get().GetWorld();
+
+    // Register collision filters/solver callbacks
+    // b2World_SetCustomFilterCallback(world->GetPhysicsId(), JetpackCollisionFilter, this);
+    b2World_SetPreSolveCallback(world->GetPhysicsId(), JetpackCollisionSolver, this);
 }
 
 void Player::Init()
@@ -34,6 +41,7 @@ void Player::Init()
     bodyDef.type = b2_dynamicBody;
     bodyDef.position = (b2Vec2){posPixels.x,
                                 posPixels.y};
+
     m_BodyId = b2CreateBody(world->GetPhysicsId(), &bodyDef);
 
     float radius = 0.45f;
@@ -45,15 +53,31 @@ void Player::Init()
     b2ShapeDef shapeDef = b2DefaultShapeDef();
     shapeDef.density = 1.0f;
     shapeDef.material.friction = 0.3f;
+    shapeDef.userData = this;
+    shapeDef.filter.categoryBits = PhysicsCategory::Player;
+    shapeDef.filter.maskBits = PhysicsCategory::Boundary;
+    shapeDef.enablePreSolveEvents = true;
 
     // Attach the circle to the body
-    b2CreateCircleShape(m_BodyId, &shapeDef, &circle);
+    m_ShapeId = b2CreateCircleShape(m_BodyId, &shapeDef, &circle);
 }
 
 void Player::Update(float delta)
 {
     m_IdleSprite.Update(delta);
     m_WalkSprite.Update(delta);
+
+    if (Input::IsKeyJustDown(GLFW_KEY_X))
+    {
+        m_JetpackEnabled = !m_JetpackEnabled;
+
+        b2Filter filter = b2Shape_GetFilter(m_ShapeId);
+        filter.maskBits = m_JetpackEnabled ? 0 : PhysicsCategory::Boundary;
+
+        b2Shape_SetFilter(m_ShapeId, filter);
+    }
+
+    // LOG_INFO("Jetpack: {}", m_JetpackEnabled);
 
     m_Velocity = Vector2(0.0f, 0.0f);
 
@@ -123,4 +147,32 @@ void Player::Render()
 
     const bool isMoving = glm::length(m_Velocity) > 0.0f;
     (isMoving ? m_WalkSprite : m_IdleSprite).Render(GetTransform());
+}
+
+bool JetpackCollisionFilter(b2ShapeId shapeA, b2ShapeId shapeB, void *context)
+{
+    Player *player = static_cast<Player *>(context);
+
+    if (player->IsJetpackEnabled())
+        return false;
+
+    return true;
+}
+
+bool JetpackCollisionSolver(b2ShapeId shapeA, b2ShapeId shapeB, b2Manifold *manifold, void *context)
+{
+    Player *player = static_cast<Player *>(context);
+
+    void *userA = b2Shape_GetUserData(shapeA);
+    void *userB = b2Shape_GetUserData(shapeB);
+
+    if (userA == player || userB == player)
+    {
+        if (player->IsJetpackEnabled())
+        {
+            return false; // disable collision for player
+        }
+    }
+
+    return true;
 }

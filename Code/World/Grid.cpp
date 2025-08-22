@@ -1,7 +1,9 @@
 #include "World/Grid.h"
 #include "Game.h"
+#include "Logger.h"
 #include "Math/Math.h"
 #include "Memory.h"
+#include "Physics/Category.h"
 #include "Registry/TileRegistry.h"
 #include "Renderer/Renderer.h"
 #include "Renderer/Vertex.h"
@@ -25,7 +27,7 @@ void Grid::Init()
             Ref<Tile> tile = TileRegistry::GetTile("metal");
 
             TileState state(tile, position);
-            CreateTileBody(position, &state);
+            CreateTileCollider(position, &state);
 
             m_Tiles.emplace(std::make_pair(position, state));
         }
@@ -42,7 +44,7 @@ void Grid::Init()
             // If tile is outside of boundaries/not placed, create a collider
             if (state == nullptr)
             {
-                CreateTileBody(relative, state);
+                CreateEdgeCollider(relative, direction);
             }
         }
     }
@@ -76,7 +78,7 @@ void Grid::BuildMesh()
     m_Mesh.SetVertices(vertices);
 }
 
-void Grid::CreateTileBody(const Vector2i &position, const TileState *tile)
+void Grid::CreateTileCollider(const Vector2i &position, const TileState *tile)
 {
     Ref<World> world = Game::Get().GetWorld();
     if (!world)
@@ -93,6 +95,62 @@ void Grid::CreateTileBody(const Vector2i &position, const TileState *tile)
     b2Polygon box = b2MakeBox(0.5f, 0.5f);
 
     b2ShapeDef shapeDef = b2DefaultShapeDef();
+    shapeDef.filter.categoryBits = PhysicsCategory::Boundary;
+    shapeDef.filter.maskBits = PhysicsCategory::Player;
+    shapeDef.enablePreSolveEvents = true;
+
+    b2CreatePolygonShape(bodyId, &shapeDef, &box);
+
+    m_Bodies[position] = bodyId;
+}
+
+void Grid::CreateEdgeCollider(const Vector2i &position, Direction direction)
+{
+    Ref<World> world = Game::Get().GetWorld();
+    if (!world)
+        return;
+
+    b2BodyDef bodyDef = b2DefaultBodyDef();
+
+    Vector2f newPosition = position;
+    float halfWidth = 0.5f;
+    float halfHeight = 0.5f;
+
+    const float size = 0.001f;
+
+    switch (direction)
+    {
+    case Direction::North:
+        halfHeight = size;
+        newPosition.y -= 0.5f + halfHeight;
+        break;
+    case Direction::South:
+        halfHeight = size;
+        newPosition.y += 0.5f + halfHeight;
+        break;
+    case Direction::West:
+        halfWidth = size;
+        newPosition.x += 0.5f + halfWidth;
+        break;
+    case Direction::East:
+        halfWidth = size;
+        newPosition.x -= 0.5f + halfWidth;
+        break;
+    default:
+        halfWidth = 0.5f;
+        halfHeight = 0.5f;
+    }
+    bodyDef.position = (b2Vec2){(float)newPosition.x, (float)newPosition.y};
+
+    b2BodyId bodyId = b2CreateBody(world->GetPhysicsId(), &bodyDef);
+
+    b2Polygon box = b2MakeBox(halfWidth, halfHeight);
+
+    b2ShapeDef shapeDef = b2DefaultShapeDef();
+    shapeDef.filter.categoryBits = PhysicsCategory::Boundary;
+    shapeDef.filter.maskBits = PhysicsCategory::Player;
+    shapeDef.enablePreSolveEvents = true;
+
     b2CreatePolygonShape(bodyId, &shapeDef, &box);
 
     m_Bodies[position] = bodyId;
