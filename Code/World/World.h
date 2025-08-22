@@ -28,6 +28,8 @@ public:
         return object;
     }
 
+    const std::vector<Ref<WorldObject>> &GetObjects() const { return m_Objects; }
+
     b2WorldId GetPhysicsId() const { return m_PhysicsId; }
 
     const Ref<Player> &GetPlayer() const { return m_Player; }

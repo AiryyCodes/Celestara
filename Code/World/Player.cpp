@@ -6,6 +6,7 @@
 #include "Memory.h"
 #include "Physics/Category.h"
 #include "Renderer/Renderer.h"
+#include "World/Grid.h"
 #include "World/World.h"
 
 #include <box2d/box2d.h>
@@ -13,6 +14,7 @@
 #include <box2d/math_functions.h>
 #include <box2d/types.h>
 #include <glm/geometric.hpp>
+#include <memory>
 
 Player::Player()
     : m_IdleSprite("Assets/Textures/Player/Idle.png", 16, 16, 4, 0.15f),
@@ -44,7 +46,7 @@ void Player::Init()
 
     m_BodyId = b2CreateBody(world->GetPhysicsId(), &bodyDef);
 
-    float radius = 0.45f;
+    float radius = 0.5f;
 
     b2Circle circle;
     circle.center = {0.0f, 0.0f};
@@ -64,10 +66,33 @@ void Player::Init()
 
 void Player::Update(float delta)
 {
+    Ref<World> world = Game::Get().GetWorld();
+
+    // Get the grid under the player
+    for (auto &obj : world->GetObjects())
+    {
+        Ref<Grid> grid = std::dynamic_pointer_cast<Grid>(obj);
+        if (!grid)
+            continue;
+
+        Vector2i gridPos = grid->WorldToGrid(GetTransform().GetPosition());
+
+        const TileState *tile = grid->GetState(GetTransform());
+        if (tile)
+        {
+            m_Grid = grid;
+            break;
+        }
+        else
+        {
+            m_Grid = nullptr;
+        }
+    }
+
     m_IdleSprite.Update(delta);
     m_WalkSprite.Update(delta);
 
-    if (Input::IsKeyJustDown(GLFW_KEY_X))
+    if (Input::IsKeyJustDown(GLFW_KEY_X) && m_Grid != nullptr)
     {
         m_JetpackEnabled = !m_JetpackEnabled;
 
@@ -76,8 +101,6 @@ void Player::Update(float delta)
 
         b2Shape_SetFilter(m_ShapeId, filter);
     }
-
-    // LOG_INFO("Jetpack: {}", m_JetpackEnabled);
 
     m_Velocity = Vector2(0.0f, 0.0f);
 

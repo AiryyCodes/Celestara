@@ -2,6 +2,7 @@
 #include "Game.h"
 #include "Logger.h"
 #include "Math/Math.h"
+#include "Math/Transform.h"
 #include "Memory.h"
 #include "Physics/Category.h"
 #include "Registry/TileRegistry.h"
@@ -160,4 +161,35 @@ const TileState *Grid::GetState(int x, int y)
 {
     auto it = m_Tiles.find(Vector2i(x, y));
     return it != m_Tiles.end() ? &it->second : nullptr;
+}
+
+const TileState *Grid::GetState(const Vector2i &pos)
+{
+    return GetState(pos.x, pos.y);
+}
+
+const TileState *Grid::GetState(const Transform &transform) const
+{
+    Vector2 transformPos = transform.GetPosition();
+    Vector2i gridPos = WorldToGrid(transformPos);
+
+    auto it = m_Tiles.find(gridPos);
+    if (it != m_Tiles.end())
+        return &it->second;
+
+    // No tile found
+    return nullptr;
+}
+
+Vector2i Grid::WorldToGrid(const Vector2 &pos) const
+{
+    Vector2 localPos = GridToLocal(pos);
+    return Vector2i(
+        static_cast<int>(std::floor(localPos.x)),
+        static_cast<int>(std::floor(localPos.y)));
+}
+
+Vector2 Grid::GridToLocal(const Vector2 &worldPos) const
+{
+    return worldPos - GetTransform().GetPosition();
 }

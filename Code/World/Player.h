@@ -1,9 +1,11 @@
 #pragma once
 
 #include "Math/Math.h"
+#include "Memory.h"
 #include "Renderer/Camera.h"
 #include "Renderer/Sprite.h"
 #include "Util/Direction.h"
+#include "World/Grid.h"
 #include "World/WorldObject.h"
 #include <box2d/collision.h>
 #include <box2d/id.h>
@@ -26,9 +28,11 @@ private:
     float m_Speed = 1.0f;
     Vector2 m_Velocity = Vector2(0.0f, 0.0f);
 
+    Direction m_Direction;
+
     bool m_JetpackEnabled = false;
 
-    Direction m_Direction;
+    Ref<Grid> m_Grid;
 
     Camera m_Camera;
 
