@@ -1,11 +1,11 @@
 #include "World/Player.h"
 #include "Game.h"
 #include "Input.h"
-#include "Logger.h"
 #include "Math/Math.h"
 #include "Memory.h"
 #include "Physics/Category.h"
 #include "Renderer/Renderer.h"
+#include "Util/Direction.h"
 #include "World/Grid.h"
 #include "World/World.h"
 
@@ -13,18 +13,15 @@
 #include <box2d/collision.h>
 #include <box2d/math_functions.h>
 #include <box2d/types.h>
+#include <cmath>
 #include <glm/geometric.hpp>
 #include <memory>
 
 Player::Player()
     : m_IdleSprite("Assets/Textures/Player/Idle.png", 16, 16, 4, 0.15f),
-      m_WalkSprite("Assets/Textures/Player/Walk.png", 16, 16, 8, 0.1f)
+      m_WalkSprite("Assets/Textures/Player/Walk.png", 16, 16, 8, 0.1f),
+      m_JetpackSprite("Assets/Textures/Player/Jetpack.png", 16, 16, 1, 0.0f)
 {
-    Ref<World> world = Game::Get().GetWorld();
-
-    // Register collision filters/solver callbacks
-    // b2World_SetCustomFilterCallback(world->GetPhysicsId(), JetpackCollisionFilter, this);
-    b2World_SetPreSolveCallback(world->GetPhysicsId(), JetpackCollisionSolver, this);
 }
 
 void Player::Init()
@@ -91,58 +88,93 @@ void Player::Update(float delta)
 
     m_IdleSprite.Update(delta);
     m_WalkSprite.Update(delta);
+    m_JetpackSprite.Update(delta);
 
+    // toggle jetpack
     if (Input::IsKeyJustDown(GLFW_KEY_X) && m_Grid != nullptr)
     {
         m_JetpackEnabled = !m_JetpackEnabled;
-
         b2Filter filter = b2Shape_GetFilter(m_ShapeId);
         filter.maskBits = m_JetpackEnabled ? 0 : PhysicsCategory::Boundary;
-
         b2Shape_SetFilter(m_ShapeId, filter);
-    }
 
-    m_Velocity = Vector2(0.0f, 0.0f);
+        if (!m_JetpackEnabled)
+            m_Velocity = {}; // reset once when jetpack is disabled
+    }
 
     m_Camera.GetTransform().SetPosition(GetTransform().GetPosition());
 
+    // Get input
+    glm::vec2 input(0.0f);
+
     if (Input::IsKeyDown(GLFW_KEY_W))
     {
-        m_Velocity.y += 1.0f;
+        input.y += 1.0f;
         m_Direction = Direction::North;
     }
     if (Input::IsKeyDown(GLFW_KEY_S))
     {
-        m_Velocity.y -= 1.0f;
+        input.y -= 1.0f;
         m_Direction = Direction::South;
     }
     if (Input::IsKeyDown(GLFW_KEY_A))
     {
-        m_Velocity.x -= 1.0f;
+        input.x -= 1.0f;
         m_Direction = Direction::West;
     }
     if (Input::IsKeyDown(GLFW_KEY_D))
     {
-        m_Velocity.x += 1.0f;
+        input.x += 1.0f;
         m_Direction = Direction::East;
     }
 
-    if (glm::length(m_Velocity) < 0.0001f)
-    {
+    bool hasInput = glm::length(input) > 0.0001f;
+
+    if (!hasInput)
         m_Direction = Direction::None;
-        b2Body_SetLinearVelocity(m_BodyId, {0.0f, 0.0f});
-        return;
+
+    if (hasInput)
+    {
+        input = glm::normalize(input);
+        m_Velocity += input * m_Acceleration * delta;
+
+        if (fabs(input.x) > fabs(input.y))
+        {
+            m_Direction = input.x > 0 ? Direction::East : Direction::West;
+        }
+        else
+        {
+            m_Direction = input.y > 0 ? Direction::North : Direction::South;
+        }
     }
 
-    m_Velocity = glm::normalize(m_Velocity) * m_Speed;
+    // Apply damping
+    if (m_JetpackEnabled)
+    {
+        // Smooth acceleration (jetpack mode)
+        glm::vec2 targetVel = input * m_JetpackSpeed;
+        m_Velocity = Lerp(m_Velocity, targetVel, m_Damping * delta);
+    }
+    else
+    {
+        // Raw velocity (walking mode)
+        m_Velocity = input * m_Speed;
+    }
 
-    b2Vec2 vel = {m_Velocity.x, m_Velocity.y};
-    b2Body_SetLinearVelocity(m_BodyId, vel);
+    // Clamp max speed
+    float maxSpeed = m_JetpackEnabled ? m_JetpackSpeed : m_Speed;
+    float len = glm::length(m_Velocity);
+
+    if (len > maxSpeed)
+        m_Velocity = (m_Velocity / len) * maxSpeed;
+
+    if (len < 0.1f)
+        m_Velocity = {};
+
+    b2Body_SetLinearVelocity(m_BodyId, {m_Velocity.x, m_Velocity.y});
 
     b2Transform bodyTransform = b2Body_GetTransform(m_BodyId);
-    GetTransform().SetPosition(Vector2(
-        bodyTransform.p.x,
-        bodyTransform.p.y));
+    GetTransform().SetPosition(Vector2(bodyTransform.p.x, bodyTransform.p.y));
 
     m_Camera.GetTransform().SetPosition(GetTransform().GetPosition());
 }
@@ -152,50 +184,36 @@ void Player::Render()
     const auto &animShader = Renderer::GetAnimationShader();
     Renderer::Begin(animShader);
 
-    int rowIndex = 2; // default (idle facing down)
+    const float deadzone = 0.5f;
+    int rowIndex = 2; // default down
 
-    if (m_Velocity.y > 0.0f)
-        rowIndex = 3; // up
-    if (m_Velocity.y < 0.0f)
-        rowIndex = 2; // down
-    if (m_Velocity.x < 0.0f)
-        rowIndex = 1; // left
-    if (m_Velocity.x > 0.0f)
-        rowIndex = 0; // right
-
-    if (m_Direction == Direction::None)
-        rowIndex = 2; // force idle down
-
-    animShader.SetUniform("u_RowIndex", rowIndex);
-
-    const bool isMoving = glm::length(m_Velocity) > 0.0f;
-    (isMoving ? m_WalkSprite : m_IdleSprite).Render(GetTransform());
-}
-
-bool JetpackCollisionFilter(b2ShapeId shapeA, b2ShapeId shapeB, void *context)
-{
-    Player *player = static_cast<Player *>(context);
-
-    if (player->IsJetpackEnabled())
-        return false;
-
-    return true;
-}
-
-bool JetpackCollisionSolver(b2ShapeId shapeA, b2ShapeId shapeB, b2Manifold *manifold, void *context)
-{
-    Player *player = static_cast<Player *>(context);
-
-    void *userA = b2Shape_GetUserData(shapeA);
-    void *userB = b2Shape_GetUserData(shapeB);
-
-    if (userA == player || userB == player)
+    if (glm::length(m_Velocity) > 0.01f)
     {
-        if (player->IsJetpackEnabled())
+        // Horizontal priority
+        if (m_Velocity.x < -deadzone)
+            rowIndex = 1; // left
+        else if (m_Velocity.x > deadzone)
+            rowIndex = 0; // right
+        else
         {
-            return false; // disable collision for player
+            // Only use vertical if horizontal is near zero
+            if (m_Velocity.y > deadzone)
+                rowIndex = 3; // up
+            else if (m_Velocity.y < -deadzone)
+                rowIndex = 2; // down
         }
     }
 
-    return true;
+    animShader.SetUniform("u_RowIndex", rowIndex);
+
+    const bool isMoving = m_Direction != Direction::None && glm::length(m_Velocity) > 0.01f;
+
+    if (m_JetpackEnabled)
+    {
+        m_JetpackSprite.Render(GetTransform());
+    }
+    else
+    {
+        (isMoving ? m_WalkSprite : m_IdleSprite).Render(GetTransform());
+    }
 }

@@ -25,8 +25,13 @@ public:
     b2ShapeId GetShapeId() const { return m_ShapeId; }
 
 private:
+    Vector2f m_Velocity = Vector2(0.0f, 0.0f);
+
     float m_Speed = 1.0f;
-    Vector2 m_Velocity = Vector2(0.0f, 0.0f);
+    float m_JetpackSpeed = 2.0f;
+
+    float m_Acceleration = 1.5f;
+    float m_Damping = 5.0f;
 
     Direction m_Direction;
 
@@ -38,10 +43,8 @@ private:
 
     AnimatedSprite m_IdleSprite;
     AnimatedSprite m_WalkSprite;
+    AnimatedSprite m_JetpackSprite;
 
     b2BodyId m_BodyId;
     b2ShapeId m_ShapeId;
 };
-
-bool JetpackCollisionFilter(b2ShapeId shapeA, b2ShapeId shapeB, void *context);
-bool JetpackCollisionSolver(b2ShapeId shapeA, b2ShapeId shapeB, b2Manifold *manifold, void *context);
