@@ -25,6 +25,8 @@ void Window::Init()
         return;
     }
 
+    glfwSwapInterval(0);
+
     glfwSetWindowUserPointer(m_Handle, this);
 
     glfwSetWindowSizeCallback(m_Handle, [](GLFWwindow *handle, int width, int height)

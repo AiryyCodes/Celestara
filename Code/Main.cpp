@@ -5,6 +5,7 @@
 
 #include "Game.h"
 #include "Input.h"
+#include "Logger.h"
 #include "Registry/TileRegistry.h"
 #include "Renderer/Renderer.h"
 #include "Renderer/Window.h"

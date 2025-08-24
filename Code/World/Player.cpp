@@ -1,6 +1,7 @@
 #include "World/Player.h"
 #include "Game.h"
 #include "Input.h"
+#include "Logger.h"
 #include "Math/Math.h"
 #include "Memory.h"
 #include "Physics/Category.h"
@@ -105,7 +106,7 @@ void Player::Update(float delta)
     m_Camera.GetTransform().SetPosition(GetTransform().GetPosition());
 
     // Get input
-    glm::vec2 input(0.0f);
+    Vector2f input(0.0f);
 
     if (Input::IsKeyDown(GLFW_KEY_W))
     {
@@ -136,29 +137,22 @@ void Player::Update(float delta)
     if (hasInput)
     {
         input = glm::normalize(input);
-        m_Velocity += input * m_Acceleration * delta;
-
-        if (fabs(input.x) > fabs(input.y))
-        {
-            m_Direction = input.x > 0 ? Direction::East : Direction::West;
-        }
-        else
-        {
-            m_Direction = input.y > 0 ? Direction::North : Direction::South;
-        }
+        // m_Velocity += input * m_Acceleration * delta;
     }
 
     // Apply damping
+    Vector2 targetVel = hasInput ? input * (m_JetpackEnabled ? m_JetpackSpeed : m_Speed) : Vector2(0.0f);
+
     if (m_JetpackEnabled)
     {
-        // Smooth acceleration (jetpack mode)
-        glm::vec2 targetVel = input * m_JetpackSpeed;
-        m_Velocity = Lerp(m_Velocity, targetVel, m_Damping * delta);
+        // Jetpack mode: smooth acceleration
+        float dampingFactor = 1.0f - std::exp(-m_Damping * delta);
+        m_Velocity = Damp(m_Velocity, targetVel, m_Damping, delta);
     }
     else
     {
-        // Raw velocity (walking mode)
-        m_Velocity = input * m_Speed;
+        // Walking mode: instant velocity
+        m_Velocity = targetVel;
     }
 
     // Clamp max speed
@@ -168,7 +162,9 @@ void Player::Update(float delta)
     if (len > maxSpeed)
         m_Velocity = (m_Velocity / len) * maxSpeed;
 
-    if (len < 0.1f)
+    float stopThreshold = 7.5f * delta;
+
+    if (len < stopThreshold)
         m_Velocity = {};
 
     b2Body_SetLinearVelocity(m_BodyId, {m_Velocity.x, m_Velocity.y});

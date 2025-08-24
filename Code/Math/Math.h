@@ -1,5 +1,6 @@
 #pragma once
 
+#include <algorithm>
 #define GLM_ENABLE_EXPERIMENTAL
 #include <glm/gtx/hash.hpp>
 #include <glm/glm.hpp>
@@ -16,4 +17,14 @@ template <typename T>
 T Lerp(const T &a, const T &b, float t)
 {
     return a * (1.0f - t) + b * t;
+}
+
+template <typename T>
+T Damp(const T &current, const T &target, float damping, float delta)
+{
+    damping = std::max(damping, 0.0f);
+    delta = std::max(delta, 0.0f);
+
+    float factor = 1.0f - std::exp(-damping * delta);
+    return current + (target - current) * factor;
 }
