@@ -1,6 +1,5 @@
 #include "World/Grid.h"
 #include "Game.h"
-#include "Logger.h"
 #include "Math/Math.h"
 #include "Math/Transform.h"
 #include "Memory.h"
@@ -27,8 +26,8 @@ void Grid::Init()
 
             Ref<Tile> tile = TileRegistry::GetTile("metal");
 
-            TileState state(tile, position);
-            CreateTileCollider(position, &state);
+            Ref<TileState> state = CreateRef<TileState>(tile, position);
+            CreateTileCollider(position, state);
 
             m_Tiles.emplace(std::make_pair(position, state));
         }
@@ -40,7 +39,7 @@ void Grid::Init()
         {
             Vector2i relative = GetRelativeVector(pos, direction);
 
-            const TileState *state = GetState(relative.x, relative.y);
+            const Ref<TileState> state = GetState(relative.x, relative.y);
 
             // If tile is outside of boundaries/not placed, create a collider
             if (state == nullptr)
@@ -71,7 +70,7 @@ void Grid::BuildMesh()
             Vertex newVertex;
             newVertex.Position = vertex.Position + Vector2(position.x, position.y);
             newVertex.UV = vertex.UV;
-            newVertex.Layer = tile.GetTextureLayer();
+            newVertex.Layer = tile->GetTextureLayer();
 
             vertices.emplace_back(newVertex);
         }
@@ -81,7 +80,34 @@ void Grid::BuildMesh()
     m_Mesh.SetVertices(vertices);
 }
 
-void Grid::CreateTileCollider(const Vector2i &position, const TileState *tile)
+void Grid::BuildColliders()
+{
+    Ref<World> world = Game::Get().GetWorld();
+
+    // Empty all bodies since we are rebuilding them
+    for (const auto &[pos, body] : m_Bodies)
+    {
+        b2DestroyBody(body);
+    }
+
+    for (const auto &[pos, tile] : m_Tiles)
+    {
+        for (Direction direction : DIRECTIONS)
+        {
+            Vector2i relative = GetRelativeVector(pos, direction);
+
+            const Ref<TileState> state = GetState(relative.x, relative.y);
+
+            // If tile is outside of boundaries/not placed, create a collider
+            if (state == nullptr)
+            {
+                CreateEdgeCollider(relative, direction);
+            }
+        }
+    }
+}
+
+void Grid::CreateTileCollider(const Vector2i &position, const Ref<TileState> tile)
 {
     Ref<World> world = Game::Get().GetWorld();
     if (!world)
@@ -159,28 +185,37 @@ void Grid::CreateEdgeCollider(const Vector2i &position, Direction direction)
     m_Bodies[position] = bodyId;
 }
 
-const TileState *Grid::GetState(int x, int y)
+const Ref<TileState> Grid::GetState(int x, int y)
 {
     auto it = m_Tiles.find(Vector2i(x, y));
-    return it != m_Tiles.end() ? &it->second : nullptr;
+    return it != m_Tiles.end() ? it->second : nullptr;
 }
 
-const TileState *Grid::GetState(const Vector2i &pos)
+const Ref<TileState> Grid::GetState(const Vector2i &pos)
 {
     return GetState(pos.x, pos.y);
 }
 
-const TileState *Grid::GetState(const Transform &transform) const
+const Ref<TileState> Grid::GetState(const Transform &transform) const
 {
     Vector2 transformPos = transform.GetPosition();
     Vector2i gridPos = WorldToGrid(transformPos);
 
     auto it = m_Tiles.find(gridPos);
     if (it != m_Tiles.end())
-        return &it->second;
+        return it->second;
 
     // No tile found
     return nullptr;
+}
+
+void Grid::SetState(const Vector2i &pos, Ref<TileState> &state)
+{
+    m_Tiles.insert_or_assign(pos, state);
+
+    CreateTileCollider(pos, state);
+
+    BuildMesh();
 }
 
 Vector2i Grid::WorldToGrid(const Vector2 &pos) const

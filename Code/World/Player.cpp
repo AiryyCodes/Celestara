@@ -5,6 +5,8 @@
 #include "Math/Math.h"
 #include "Memory.h"
 #include "Physics/Category.h"
+#include "Physics/RayCast.h"
+#include "Registry/TileRegistry.h"
 #include "Renderer/Renderer.h"
 #include "Util/Direction.h"
 #include "World/Grid.h"
@@ -52,10 +54,10 @@ void Player::Init()
 
     b2ShapeDef shapeDef = b2DefaultShapeDef();
     shapeDef.density = 1.0f;
-    shapeDef.material.friction = 0.3f;
+    shapeDef.material.friction = 0.0f;
     shapeDef.userData = this;
     shapeDef.filter.categoryBits = PhysicsCategory::Player;
-    shapeDef.filter.maskBits = PhysicsCategory::Boundary;
+    shapeDef.filter.maskBits = PhysicsCategory::Boundary | PhysicsCategory::Player;
     shapeDef.enablePreSolveEvents = true;
 
     // Attach the circle to the body
@@ -66,113 +68,63 @@ void Player::Update(float delta)
 {
     Ref<World> world = Game::Get().GetWorld();
 
-    // Get the grid under the player
-    for (auto &obj : world->GetObjects())
-    {
-        Ref<Grid> grid = std::dynamic_pointer_cast<Grid>(obj);
-        if (!grid)
-            continue;
-
-        Vector2i gridPos = grid->WorldToGrid(GetTransform().GetPosition());
-
-        const TileState *tile = grid->GetState(GetTransform());
-        if (tile)
-        {
-            m_Grid = grid;
-            break;
-        }
-        else
-        {
-            m_Grid = nullptr;
-        }
-    }
-
-    m_IdleSprite.Update(delta);
-    m_WalkSprite.Update(delta);
-    m_JetpackSprite.Update(delta);
+    UpdateAnims(delta);
 
     // toggle jetpack
     if (Input::IsKeyJustDown(GLFW_KEY_X) && m_Grid != nullptr)
     {
         m_JetpackEnabled = !m_JetpackEnabled;
         b2Filter filter = b2Shape_GetFilter(m_ShapeId);
-        filter.maskBits = m_JetpackEnabled ? 0 : PhysicsCategory::Boundary;
+        filter.maskBits = m_JetpackEnabled ? 0 : PhysicsCategory::Boundary | PhysicsCategory::Player;
         b2Shape_SetFilter(m_ShapeId, filter);
 
         if (!m_JetpackEnabled)
             m_Velocity = {}; // reset once when jetpack is disabled
     }
 
-    m_Camera.GetTransform().SetPosition(GetTransform().GetPosition());
+    Move(delta);
 
-    // Get input
-    Vector2f input(0.0f);
+    // Place tiles on grid
+    if (Input::IsButtonJustDown(GLFW_MOUSE_BUTTON_LEFT))
+    {
+        Vector2f mousePos = Vector2f((float)Input::GetMouseX(), (float)Input::GetMouseY());
+        Vector4i viewport = Vector4i(0, 0, Renderer::GetMainWindow()->GetWidth(), Renderer::GetMainWindow()->GetHeight());
 
-    if (Input::IsKeyDown(GLFW_KEY_W))
-    {
-        input.y += 1.0f;
-        m_Direction = Direction::North;
-    }
-    if (Input::IsKeyDown(GLFW_KEY_S))
-    {
-        input.y -= 1.0f;
-        m_Direction = Direction::South;
-    }
-    if (Input::IsKeyDown(GLFW_KEY_A))
-    {
-        input.x -= 1.0f;
-        m_Direction = Direction::West;
-    }
-    if (Input::IsKeyDown(GLFW_KEY_D))
-    {
-        input.x += 1.0f;
-        m_Direction = Direction::East;
-    }
+        Vector2f worldPos = ScreenToWorld(mousePos, m_Camera.GetViewMatrix(), m_Camera.GetProjectionMatrix(), viewport);
+        LOG_INFO("Clicked at: X: {} Y: {}", worldPos.x, worldPos.y);
 
-    bool hasInput = glm::length(input) > 0.0001f;
+        Ref<Grid> grid = GetGridAtPos(worldPos);
+        if (!grid)
+        {
+            LOG_INFO("Grid is null!");
+            return;
+        }
 
-    if (!hasInput)
-        m_Direction = Direction::None;
+        Vector2i gridPos = grid->WorldToGrid(worldPos);
+        LOG_INFO("Clicked tile: X: {} Y: {}", gridPos.x, gridPos.y);
 
-    if (hasInput)
-    {
-        input = glm::normalize(input);
-        // m_Velocity += input * m_Acceleration * delta;
-    }
+        Vector4 tileAABB(
+            gridPos.x, gridPos.y,
+            gridPos.x + 1.0f, gridPos.y + 1.0f);
 
-    // Apply damping
-    Vector2 targetVel = hasInput ? input * (m_JetpackEnabled ? m_JetpackSpeed : m_Speed) : Vector2(0.0f);
+        Vector2f position = GetTransform().GetPosition();
 
-    if (m_JetpackEnabled)
-    {
-        // Jetpack mode: smooth acceleration
-        float dampingFactor = 1.0f - std::exp(-m_Damping * delta);
-        m_Velocity = Damp(m_Velocity, targetVel, m_Damping, delta);
-    }
-    else
-    {
-        // Walking mode: instant velocity
-        m_Velocity = targetVel;
+        Vector4 playerAABB(
+            position.x, position.y,
+            position.x + 1.0f, position.y + 1.0f);
+
+        if (IsOverlapping(playerAABB, tileAABB))
+        {
+            return;
+        }
+
+        Ref<Tile> tile = TileRegistry::GetTile("air");
+        Ref<TileState> state = CreateRef<TileState>(tile, gridPos);
+        grid->SetState(gridPos, state);
     }
 
-    // Clamp max speed
-    float maxSpeed = m_JetpackEnabled ? m_JetpackSpeed : m_Speed;
-    float len = glm::length(m_Velocity);
-
-    if (len > maxSpeed)
-        m_Velocity = (m_Velocity / len) * maxSpeed;
-
-    float stopThreshold = 7.5f * delta;
-
-    if (len < stopThreshold)
-        m_Velocity = {};
-
-    b2Body_SetLinearVelocity(m_BodyId, {m_Velocity.x, m_Velocity.y});
-
-    b2Transform bodyTransform = b2Body_GetTransform(m_BodyId);
-    GetTransform().SetPosition(Vector2(bodyTransform.p.x, bodyTransform.p.y));
-
-    m_Camera.GetTransform().SetPosition(GetTransform().GetPosition());
+    // Get the grid under the player
+    m_Grid = GetGridAtPos(GetTransform().GetPosition());
 }
 
 void Player::Render()
@@ -212,4 +164,110 @@ void Player::Render()
     {
         (isMoving ? m_WalkSprite : m_IdleSprite).Render(GetTransform());
     }
+}
+
+void Player::UpdateAnims(float delta)
+{
+    m_IdleSprite.Update(delta);
+    m_WalkSprite.Update(delta);
+    m_JetpackSprite.Update(delta);
+}
+
+void Player::Move(float delta)
+{
+    m_Camera.GetTransform().SetPosition(GetTransform().GetPosition());
+
+    // Get input
+    Vector2f input(0.0f);
+
+    if (Input::IsKeyDown(GLFW_KEY_W))
+    {
+        input.y += 1.0f;
+        m_Direction = Direction::North;
+    }
+    if (Input::IsKeyDown(GLFW_KEY_S))
+    {
+        input.y -= 1.0f;
+        m_Direction = Direction::South;
+    }
+    if (Input::IsKeyDown(GLFW_KEY_A))
+    {
+        input.x -= 1.0f;
+        m_Direction = Direction::West;
+    }
+    if (Input::IsKeyDown(GLFW_KEY_D))
+    {
+        input.x += 1.0f;
+        m_Direction = Direction::East;
+    }
+
+    bool hasInput = glm::length(input) > 0.0001f;
+
+    if (!hasInput)
+        m_Direction = Direction::None;
+
+    if (hasInput)
+    {
+        input = glm::normalize(input);
+    }
+
+    // Apply damping
+    Vector2 targetVel = hasInput ? input * (m_JetpackEnabled ? m_JetpackSpeed : m_Speed) : Vector2(0.0f);
+
+    if (m_JetpackEnabled)
+    {
+        // Jetpack mode: smooth acceleration
+        float dampingFactor = 1.0f - std::exp(-m_Damping * delta);
+        m_Velocity = Damp(m_Velocity, targetVel, m_Damping, delta);
+    }
+    else
+    {
+        // Walking mode: instant velocity
+        m_Velocity = targetVel;
+    }
+
+    // Clamp max speed
+    float maxSpeed = m_JetpackEnabled ? m_JetpackSpeed : m_Speed;
+    float len = glm::length(m_Velocity);
+
+    if (len > maxSpeed)
+        m_Velocity = (m_Velocity / len) * maxSpeed;
+
+    float stopThreshold = 7.5f * delta;
+
+    if (len < stopThreshold)
+        m_Velocity = {};
+
+    b2Body_SetLinearVelocity(m_BodyId, {m_Velocity.x, m_Velocity.y});
+
+    b2Transform bodyTransform = b2Body_GetTransform(m_BodyId);
+    GetTransform().SetPosition(Vector2(bodyTransform.p.x, bodyTransform.p.y));
+
+    m_Camera.GetTransform().SetPosition(GetTransform().GetPosition());
+}
+
+Ref<Grid> Player::GetGridAtPos(const Vector2f &pos)
+{
+    Ref<World> world = Game::Get().GetWorld();
+
+    // Get the grid under the player
+    for (auto &obj : world->GetObjects())
+    {
+        Ref<Grid> grid = std::dynamic_pointer_cast<Grid>(obj);
+        if (!grid)
+            continue;
+
+        Vector2i gridPos = grid->WorldToGrid(pos);
+
+        const Ref<TileState> tile = grid->GetState(gridPos);
+        return tile != nullptr ? grid : nullptr;
+    }
+
+    return nullptr;
+}
+
+bool Player::IsOverlapping(Vector4 a, Vector4 b)
+{
+    return a.z > b.x && a.x < b.z && // x-axis overlap
+           a.w > b.y && a.y < b.w;   // y-axis overlap
 }

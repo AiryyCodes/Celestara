@@ -37,6 +37,14 @@ void Window::Init()
     glfwSetKeyCallback(m_Handle, [](GLFWwindow *handle, int key, int scancode, int action, int mods)
                        { Input::s_KeysDown[key] = action == GLFW_PRESS || action == GLFW_REPEAT;
                        Input::s_KeysJustDown[key] = action == GLFW_PRESS; });
+
+    glfwSetCursorPosCallback(m_Handle, [](GLFWwindow *handle, double xPos, double yPos)
+                             { Input::s_MouseX = xPos;
+                             Input::s_MouseY = yPos; });
+
+    glfwSetMouseButtonCallback(m_Handle, [](GLFWwindow *handle, int button, int action, int mods)
+                               { Input::s_ButtonsDown[button] = action == GLFW_PRESS || action == GLFW_REPEAT;
+                               Input::s_ButtonsJustDown[button] = action == GLFW_PRESS; });
 }
 
 void Window::SwapBuffers() const
