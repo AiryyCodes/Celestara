@@ -5,8 +5,6 @@
 
 #include "Game.h"
 #include "Input.h"
-#include "Logger.h"
-#include "Registry/TileRegistry.h"
 #include "Renderer/Renderer.h"
 #include "Renderer/Window.h"
 
@@ -30,8 +28,6 @@ int main()
         printf("Failed to initialize renderer\n");
         return EXIT_FAILURE;
     }
-
-    TileRegistry::Init();
 
     Game game;
     game.Init();

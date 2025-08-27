@@ -1,0 +1,28 @@
+#pragma once
+
+#include "Inventory/Item.h"
+#include <vector>
+
+struct InventorySlot
+{
+    ItemStack Item;
+};
+
+class Inventory
+{
+public:
+    Inventory(int rows, int columns)
+        : m_Rows(rows), m_Columns(columns)
+    {
+        m_Slots.resize(rows * columns);
+    }
+
+    ItemStack *GetItem(int slot);
+    void SetItem(int slot, ItemStack &item);
+
+private:
+    int m_Rows;
+    int m_Columns;
+
+    std::vector<InventorySlot> m_Slots;
+};

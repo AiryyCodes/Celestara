@@ -1,9 +1,11 @@
 #pragma once
 
+#include "Inventory/Inventory.h"
 #include "Math/Math.h"
 #include "Memory.h"
 #include "Renderer/Camera.h"
 #include "Renderer/Sprite.h"
+#include "UI/Elements/InventoryUI.h"
 #include "Util/Direction.h"
 #include "World/Grid.h"
 #include "World/WorldObject.h"
@@ -49,6 +51,9 @@ private:
     Ref<Grid> m_Grid;
 
     Camera m_Camera;
+
+    Inventory m_Inventory;
+    Ref<InventoryUI> m_InventoryUI;
 
     AnimatedSprite m_IdleSprite;
     AnimatedSprite m_WalkSprite;

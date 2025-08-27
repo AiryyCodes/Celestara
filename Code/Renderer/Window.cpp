@@ -1,4 +1,5 @@
 #include "Window.h"
+#include "Game.h"
 #include "Input.h"
 #include "Math/Math.h"
 
@@ -30,9 +31,13 @@ void Window::Init()
     glfwSetWindowUserPointer(m_Handle, this);
 
     glfwSetWindowSizeCallback(m_Handle, [](GLFWwindow *handle, int width, int height)
-                              { Window *window = static_cast<Window *>(glfwGetWindowUserPointer(handle));
-                              window->m_Width = width;
-                              window->m_Height = height; });
+                              {
+                                  Window *window = static_cast<Window *>(glfwGetWindowUserPointer(handle));
+                                  window->m_Width = width;
+                                  window->m_Height = height;
+
+                                  const auto &uiManager = Game::Get().GetUIManager();
+                                  uiManager.GetActiveElement()->OnWindowResize(width, height); });
 
     glfwSetKeyCallback(m_Handle, [](GLFWwindow *handle, int key, int scancode, int action, int mods)
                        { Input::s_KeysDown[key] = action == GLFW_PRESS || action == GLFW_REPEAT;

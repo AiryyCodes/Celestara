@@ -1,13 +1,13 @@
 #include "World/Player.h"
 #include "Game.h"
 #include "Input.h"
-#include "Logger.h"
+#include "Inventory/Item.h"
 #include "Math/Math.h"
 #include "Memory.h"
 #include "Physics/Category.h"
-#include "Physics/RayCast.h"
 #include "Registry/TileRegistry.h"
 #include "Renderer/Renderer.h"
+#include "UI/Elements/InventoryUI.h"
 #include "Util/Direction.h"
 #include "World/Grid.h"
 #include "World/World.h"
@@ -23,13 +23,25 @@
 Player::Player()
     : m_IdleSprite("Assets/Textures/Player/Idle.png", 16, 16, 4, 0.15f),
       m_WalkSprite("Assets/Textures/Player/Walk.png", 16, 16, 8, 0.1f),
-      m_JetpackSprite("Assets/Textures/Player/Jetpack.png", 16, 16, 1, 0.0f)
+      m_JetpackSprite("Assets/Textures/Player/Jetpack.png", 16, 16, 1, 0.0f),
+      m_Inventory(4, 4)
 {
+
+    ItemStack stack;
+    stack.Id = 0;
+    stack.Quantity = 2;
+
+    m_Inventory.SetItem(0, stack);
+
+    m_InventoryUI = CreateRef<InventoryUI>(m_Inventory);
+    m_InventoryUI->FillSlots(4, 4);
 }
 
 void Player::Init()
 {
     Ref<World> world = Game::Get().GetWorld();
+    UIManager &uiManager = Game::Get().GetUIManager();
+    uiManager.SetElement(m_InventoryUI);
 
     GetTransform().SetPosition(Vector2(2.0f, 2.0f));
 
@@ -85,23 +97,20 @@ void Player::Update(float delta)
     Move(delta);
 
     // Place tiles on grid
-    if (Input::IsButtonJustDown(GLFW_MOUSE_BUTTON_LEFT))
+    if (Input::IsButtonJustDown(GLFW_MOUSE_BUTTON_LEFT) && !Game::Get().GetUIManager().GetActiveElement())
     {
         Vector2f mousePos = Vector2f((float)Input::GetMouseX(), (float)Input::GetMouseY());
         Vector4i viewport = Vector4i(0, 0, Renderer::GetMainWindow()->GetWidth(), Renderer::GetMainWindow()->GetHeight());
 
         Vector2f worldPos = ScreenToWorld(mousePos, m_Camera.GetViewMatrix(), m_Camera.GetProjectionMatrix(), viewport);
-        LOG_INFO("Clicked at: X: {} Y: {}", worldPos.x, worldPos.y);
 
         Ref<Grid> grid = GetGridAtPos(worldPos);
         if (!grid)
         {
-            LOG_INFO("Grid is null!");
             return;
         }
 
         Vector2i gridPos = grid->WorldToGrid(worldPos);
-        LOG_INFO("Clicked tile: X: {} Y: {}", gridPos.x, gridPos.y);
 
         Vector4 tileAABB(
             gridPos.x, gridPos.y,

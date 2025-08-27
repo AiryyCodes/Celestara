@@ -222,8 +222,8 @@ Vector2i Grid::WorldToGrid(const Vector2 &pos) const
 {
     Vector2 localPos = GridToLocal(pos);
     return Vector2i(
-        static_cast<int>(std::floor(localPos.x)),
-        static_cast<int>(std::floor(localPos.y)));
+        static_cast<int>(std::floor(localPos.x + 0.5f)),
+        static_cast<int>(std::floor(localPos.y + 0.5f)));
 }
 
 Vector2 Grid::GridToLocal(const Vector2 &worldPos) const
