@@ -1,5 +1,13 @@
 #include "Input.h"
 
+void Input::EndFrame()
+{
+    for (int i = 0; i < GLFW_MOUSE_BUTTON_LAST; i++)
+        s_ButtonsJustDown[i] = false;
+    for (int i = 0; i < GLFW_KEY_LAST; i++)
+        s_KeysJustDown[i] = false;
+}
+
 bool Input::IsKeyDown(int key)
 {
     return s_KeysDown[key];
@@ -7,21 +15,17 @@ bool Input::IsKeyDown(int key)
 
 bool Input::IsKeyJustDown(int key)
 {
-    bool state = s_KeysJustDown[key];
-    s_KeysJustDown[key] = false;
-    return state;
+    return s_KeysJustDown[key];
 }
 
-bool Input::IsButtonDown(int key)
+bool Input::IsButtonDown(int button)
 {
-    return s_ButtonsDown[key];
+    return s_ButtonsDown[button];
 }
 
-bool Input::IsButtonJustDown(int key)
+bool Input::IsButtonJustDown(int button)
 {
-    bool state = s_ButtonsJustDown[key];
-    s_ButtonsJustDown[key] = false;
-    return state;
+    return s_ButtonsJustDown[button];
 }
 
 double Input::GetMouseX()

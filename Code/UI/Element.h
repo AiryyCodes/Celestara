@@ -22,8 +22,10 @@ public:
 
     virtual void Render() {}
 
-    virtual void OnClick() {}
+    virtual void OnClick(int x, int y) {}
     virtual void OnWindowResize(int width, int height) {};
+
+    bool IsInside(int mouseX, int mouseY) const;
 
     const Vector2f &GetPosition() const { return m_Position; }
     void SetPosition(const Vector2f &position) { m_Position = position; }

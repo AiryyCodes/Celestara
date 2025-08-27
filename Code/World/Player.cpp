@@ -32,6 +32,7 @@ Player::Player()
     stack.Quantity = 2;
 
     m_Inventory.SetItem(0, stack);
+    // m_Inventory.SetItem(12, stack);
 
     m_InventoryUI = CreateRef<InventoryUI>(m_Inventory);
     m_InventoryUI->FillSlots(4, 4);
@@ -41,7 +42,7 @@ void Player::Init()
 {
     Ref<World> world = Game::Get().GetWorld();
     UIManager &uiManager = Game::Get().GetUIManager();
-    uiManager.SetElement(m_InventoryUI);
+    // uiManager.SetElement(m_InventoryUI);
 
     GetTransform().SetPosition(Vector2(2.0f, 2.0f));
 
@@ -95,6 +96,15 @@ void Player::Update(float delta)
     }
 
     Move(delta);
+
+    // Inventory open/close
+    if (Input::IsKeyJustDown(GLFW_KEY_E))
+    {
+        if (Game::Get().GetUIManager().GetActiveElement())
+            Game::Get().GetUIManager().SetElement(nullptr);
+        else
+            Game::Get().GetUIManager().SetElement(m_InventoryUI);
+    }
 
     // Place tiles on grid
     if (Input::IsButtonJustDown(GLFW_MOUSE_BUTTON_LEFT) && !Game::Get().GetUIManager().GetActiveElement())

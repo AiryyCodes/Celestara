@@ -14,7 +14,7 @@ public:
     Inventory(int rows, int columns)
         : m_Rows(rows), m_Columns(columns)
     {
-        m_Slots.resize(rows * columns);
+        m_Slots.resize(columns * rows);
     }
 
     ItemStack *GetItem(int slot);

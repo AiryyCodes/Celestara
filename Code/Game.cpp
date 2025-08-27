@@ -22,6 +22,8 @@ void Game::Init()
 void Game::Update(float delta)
 {
     m_World->Update(delta);
+
+    m_UIManager.Update();
 }
 
 void Game::Render()

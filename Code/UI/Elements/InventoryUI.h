@@ -14,7 +14,12 @@ public:
 
     void Render() override;
 
-    void OnClick() override;
+    void Clear() { m_Item = nullptr; }
+
+    int GetIndex() const { return m_Index; }
+
+    ItemStack *GetItem() { return m_Item; }
+    void SetItem(ItemStack *item) { m_Item = item; }
 
 private:
     int m_Row;
@@ -33,10 +38,13 @@ public:
 
     void Render() override;
 
-    void OnClick() override;
+    void OnClick(int x, int y) override;
     void OnWindowResize(int width, int height) override;
 
     void FillSlots(int rows, int columns);
+
+private:
+    void HandleSlotClick(InventorySlotUI &slot);
 
 private:
     int m_Rows;
@@ -45,4 +53,6 @@ private:
     std::vector<InventorySlotUI> m_Slots;
 
     Inventory &m_Inventory;
+
+    ItemStack *m_CursorItem = nullptr;
 };

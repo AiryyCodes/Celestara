@@ -5,6 +5,8 @@
 class Input
 {
 public:
+    static void EndFrame();
+
     static bool IsKeyDown(int key);
     static bool IsKeyJustDown(int key);
 

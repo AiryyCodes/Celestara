@@ -56,6 +56,8 @@ int main()
         Renderer::End();
 
         window.SwapBuffers();
+
+        Input::EndFrame();
     }
 
     Renderer::Shutdown();

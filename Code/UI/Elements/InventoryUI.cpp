@@ -5,10 +5,11 @@
 #include "Registry/ItemRegistry.h"
 #include "Math/Math.h"
 #include "Renderer/Renderer.h"
+#include "Renderer/Window.h"
 
 InventorySlotUI::InventorySlotUI(int row, int column, int index, ItemStack *item)
     : UIElement(Vector2i(16, 16), "Assets/Textures/Transparent.png"),
-      m_Row(row), m_Column(column), m_Item(item)
+      m_Row(row), m_Column(column), m_Index(index), m_Item(item)
 {
     m_Mesh.SetVertices(UI_VERTICES);
 }
@@ -18,7 +19,7 @@ void InventorySlotUI::Render()
     if (!m_Item)
         return;
 
-    if (m_Item->Id == -1 || m_Item->Quantity <= 0)
+    if (m_Item->Id < 0 || m_Item->Quantity <= 0)
         return;
 
     Ref<Item> item = ItemRegistry::GetItem(m_Item->Id);
@@ -29,10 +30,6 @@ void InventorySlotUI::Render()
     m_Mesh.SetTexture(ItemRegistry::GetTextures());
     Renderer::GetSlotShader().SetUniform("u_Layer", item->GetTextureLayer());
     Renderer::SubmitUI(m_Mesh, GetPosition(), GetSize(), GetScale());
-}
-
-void InventorySlotUI::OnClick()
-{
 }
 
 InventoryUI::InventoryUI(Inventory &inventory)
@@ -52,8 +49,21 @@ void InventoryUI::Render()
     }
 }
 
-void InventoryUI::OnClick()
+void InventoryUI::OnClick(int x, int y)
 {
+    Window *window = Renderer::GetMainWindow();
+
+    int flippedY = window->GetHeight() - y;
+
+    for (auto &slot : m_Slots)
+    {
+        bool inside = slot.IsInside(x, flippedY);
+        if (inside)
+        {
+            HandleSlotClick(slot);
+            return;
+        }
+    }
 }
 
 void InventoryUI::OnWindowResize(int width, int height)
@@ -61,6 +71,23 @@ void InventoryUI::OnWindowResize(int width, int height)
     Center();
 
     FillSlots(m_Rows, m_Columns);
+}
+
+void InventoryUI::HandleSlotClick(InventorySlotUI &slot)
+{
+    ItemStack *slotItem = slot.GetItem();
+    if (m_CursorItem == nullptr)
+    {
+        // Pick up from slot
+        m_CursorItem = slotItem;
+        slot.Clear();
+    }
+    else
+    {
+        ItemStack *temp = slotItem;
+        slot.SetItem(m_CursorItem);
+        m_CursorItem = temp;
+    }
 }
 
 void InventoryUI::FillSlots(int rows, int columns)
@@ -89,22 +116,23 @@ void InventoryUI::FillSlots(int rows, int columns)
     float startX = invPos.x + (padding * GetScale());
     float startY = invPos.y + (padding * GetScale());
 
-    int index = 0;
     for (int row = 0; row < rows; row++)
     {
         for (int col = 0; col < columns; col++)
         {
+            int index = row * columns + col;
+
+            float x = startX + col * (slotW + spacing);
+
+            // Flip Y so row 0 is top
+            float y = startY + (rows - 1 - row) * (slotH + spacing);
+
             InventorySlotUI uiSlot(row, col, index, m_Inventory.GetItem(index));
             uiSlot.SetScale(slotScale);
             uiSlot.SetSize(slotSize);
-
-            float x = startX + col * (slotW + spacing);
-            float y = startY + row * (slotH + spacing);
-
             uiSlot.SetPosition({x, y});
-            m_Slots.push_back(uiSlot);
 
-            index++;
+            m_Slots.push_back(uiSlot);
         }
     }
 }

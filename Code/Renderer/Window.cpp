@@ -48,8 +48,12 @@ void Window::Init()
                              Input::s_MouseY = yPos; });
 
     glfwSetMouseButtonCallback(m_Handle, [](GLFWwindow *handle, int button, int action, int mods)
-                               { Input::s_ButtonsDown[button] = action == GLFW_PRESS || action == GLFW_REPEAT;
-                               Input::s_ButtonsJustDown[button] = action == GLFW_PRESS; });
+                               {
+                               if (action == GLFW_PRESS && !Input::s_ButtonsDown[button])
+                                    Input::s_ButtonsJustDown[button] = true;
+                                Input::s_ButtonsDown[button] = (action != GLFW_RELEASE);
+                               
+                                Input::s_ButtonsJustDown[button] = action == GLFW_PRESS; });
 }
 
 void Window::SwapBuffers() const
