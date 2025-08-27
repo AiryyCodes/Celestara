@@ -54,5 +54,6 @@ private:
 
     Inventory &m_Inventory;
 
+    Mesh m_Mesh;
     ItemStack *m_CursorItem = nullptr;
 };

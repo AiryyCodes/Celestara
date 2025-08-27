@@ -35,5 +35,6 @@ double Input::GetMouseX()
 
 double Input::GetMouseY()
 {
+
     return s_MouseY;
 }

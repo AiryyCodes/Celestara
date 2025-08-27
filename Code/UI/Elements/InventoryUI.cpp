@@ -1,4 +1,5 @@
 #include "UI/Elements/InventoryUI.h"
+#include "Input.h"
 #include "Inventory/Inventory.h"
 #include "Inventory/Item.h"
 #include "Memory.h"
@@ -36,6 +37,8 @@ InventoryUI::InventoryUI(Inventory &inventory)
     : UIElement(Vector2i(75, 75), "Assets/Textures/UI/Inventory.png"),
       m_Inventory(inventory)
 {
+    m_Mesh.SetVertices(UI_VERTICES);
+
     SetScale(3);
 
     Center();
@@ -46,6 +49,27 @@ void InventoryUI::Render()
     for (InventorySlotUI &slot : m_Slots)
     {
         slot.Render();
+    }
+
+    if (m_CursorItem)
+    {
+        // TODO: Migrate this to a "RenderItem" function
+        const Ref<Item> item = ItemRegistry::GetItem(m_CursorItem->Id);
+        if (!item)
+            return;
+
+        Renderer::Begin(Renderer::GetSlotShader());
+        m_Mesh.SetTexture(ItemRegistry::GetTextures());
+        Renderer::GetSlotShader().SetUniform("u_Layer", item->GetTextureLayer());
+
+        double mouseX = Input::GetMouseX();
+        double mouseY = Input::GetMouseY();
+
+        Window *window = Renderer::GetMainWindow();
+
+        int flippedY = window->GetHeight() - mouseY;
+
+        Renderer::SubmitUI(m_Mesh, Vector2f(mouseX, flippedY) - Vector2f(16 * 3 / 2, 16 * 3 / 2), Vector2i(16, 16), GetScale());
     }
 }
 
