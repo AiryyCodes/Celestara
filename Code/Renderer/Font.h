@@ -48,6 +48,8 @@ public:
 
     static FontFace *GetFont(Font font);
 
+    static int GetTextWidth(Font font, const std::string &text, float scale);
+
 private:
     static inline std::unordered_map<Font, FontFace> s_LoadedFonts;
 

@@ -5,8 +5,10 @@
 #include "Memory.h"
 #include "Registry/ItemRegistry.h"
 #include "Math/Math.h"
+#include "Renderer/Font.h"
 #include "Renderer/Renderer.h"
 #include "Renderer/Window.h"
+#include <string>
 
 InventorySlotUI::InventorySlotUI(int row, int column, int index, ItemStack *item)
     : UIElement(Vector2i(16, 16), "Assets/Textures/Transparent.png"),
@@ -31,6 +33,16 @@ void InventorySlotUI::Render()
     m_Mesh.SetTexture(ItemRegistry::GetTextures());
     Renderer::GetSlotShader().SetUniform("u_Layer", item->GetTextureLayer());
     Renderer::SubmitUI(m_Mesh, GetPosition(), GetSize(), GetScale());
+
+    std::string quantity = std::to_string(m_Item->Quantity);
+
+    float textWidth = FontManager::GetTextWidth(Font::Main, quantity, 0.5f);
+
+    // position text so its right edge lines up with the slot’s right edge
+    float textX = GetPosition().x + GetSize().x * GetScale() - textWidth - 2.0f;
+    float textY = GetPosition().y + 2.0f;
+
+    Renderer::SubmitText(quantity, Font::Main, Vector2f(textX, textY), 0.5f, Vector3(1.0f, 1.0f, 1.0f));
 }
 
 InventoryUI::InventoryUI(Inventory &inventory)
@@ -53,7 +65,6 @@ void InventoryUI::Render()
 
     if (m_CursorItem)
     {
-        // TODO: Migrate this to a "RenderItem" function
         const Ref<Item> item = ItemRegistry::GetItem(m_CursorItem->Id);
         if (!item)
             return;
@@ -66,11 +77,31 @@ void InventoryUI::Render()
         double mouseY = Input::GetMouseY();
 
         Window *window = Renderer::GetMainWindow();
-
         int flippedY = window->GetHeight() - mouseY;
-        float offset = 16.0f * 3 / 2;
 
-        Renderer::SubmitUI(m_Mesh, Vector2f(mouseX, flippedY) - Vector2f(offset, offset), Vector2i(16, 16), GetScale());
+        // slot size in UI coords
+        Vector2i slotSize(16, 16);
+        float scale = GetScale();
+
+        // position where the dragged slot is rendered
+        Vector2f slotPos(mouseX - slotSize.x * scale / 2.0f,
+                         flippedY - slotSize.y * scale / 2.0f);
+
+        // draw the slot item
+        Renderer::SubmitUI(m_Mesh, slotPos, slotSize, scale);
+
+        // draw the quantity
+        std::string quantity = std::to_string(m_CursorItem->Quantity);
+        float textScale = 0.5f;
+
+        float textWidth = FontManager::GetTextWidth(Font::Main, quantity, textScale);
+
+        // bottom-right inside the slot bounds
+        float textX = slotPos.x + slotSize.x * scale - textWidth - 2.0f;
+        float textY = slotPos.y + 2.0f;
+
+        Renderer::SubmitText(quantity, Font::Main, Vector2f(textX, textY),
+                             textScale, Vector3(1.0f, 1.0f, 1.0f));
     }
 }
 

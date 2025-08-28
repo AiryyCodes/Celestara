@@ -29,7 +29,7 @@ Player::Player()
 
     ItemStack stack;
     stack.Id = 0;
-    stack.Quantity = 2;
+    stack.Quantity = 1000;
 
     m_Inventory.SetItem(0, stack);
     // m_Inventory.SetItem(12, stack);

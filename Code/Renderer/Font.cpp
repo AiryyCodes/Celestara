@@ -96,3 +96,31 @@ FontFace *FontManager::GetFont(Font font)
 
     return &it->second;
 }
+
+int FontManager::GetTextWidth(Font font, const std::string &text, float scale)
+{
+    const FontFace &face = s_LoadedFonts.at(font);
+
+    int width = 0;
+    FT_UInt prev = 0;
+
+    for (char c : text)
+    {
+        FT_UInt glyph_index = FT_Get_Char_Index(face.GetFace(), c);
+
+        if (prev && glyph_index)
+        {
+            FT_Vector delta;
+            FT_Get_Kerning(face.GetFace(), prev, glyph_index, FT_KERNING_DEFAULT, &delta);
+            width += (delta.x >> 6); // add kerning
+        }
+
+        if (FT_Load_Glyph(face.GetFace(), glyph_index, FT_LOAD_DEFAULT))
+            continue;
+
+        width += (face.GetFace()->glyph->advance.x >> 6); // add glyph advance
+        prev = glyph_index;
+    }
+
+    return width * scale;
+}
