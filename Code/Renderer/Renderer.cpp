@@ -45,7 +45,8 @@ bool Renderer::Init()
     s_SlotShader.Init("Assets/Shaders/Slot.vert", "Assets/Shaders/Slot.frag");
     s_TextShader.Init("Assets/Shaders/Text.vert", "Assets/Shaders/Text.frag");
 
-    s_TextMesh = CreateRef<Mesh>(MeshUsage::Dynamic);
+    std::vector<Vertex> emptyVerts(6); // one quad
+    s_TextMesh = CreateRef<Mesh>(emptyVerts, MeshUsage::Dynamic);
 
     return true;
 }
@@ -126,14 +127,15 @@ void Renderer::SubmitText(const std::string &text, Font font, Vector2f position,
 {
     Renderer::Begin(s_TextShader);
 
-    std::vector<Vertex> vertices;
-    vertices.reserve(text.size() * 6);
-
     FontFace *face = FontManager::GetFont(font);
     if (!face)
         return;
 
     const auto &characters = face->GetCharacters();
+
+    Matrix4 projection = glm::ortho(0.0f, (float)s_MainWindow->GetWidth(), 0.0f, (float)s_MainWindow->GetHeight(), -1.0f, 1.0f);
+
+    s_ActiveShader->SetUniform("u_Projection", projection);
 
     for (char c : text)
     {
@@ -165,6 +167,10 @@ void Renderer::SubmitText(const std::string &text, Font font, Vector2f position,
 
         // Update the dynamic mesh
         s_TextMesh->SetVertices(verts);
+
+        s_TextShader.SetUniform("u_TextColor", color);
+
+        s_TextMesh->Bind();
 
         // Draw quad
         glDrawArrays(GL_TRIANGLES, 0, s_TextMesh->GetNumVertices());

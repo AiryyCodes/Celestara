@@ -37,7 +37,8 @@ void Window::Init()
                                   window->m_Height = height;
 
                                   const auto &uiManager = Game::Get().GetUIManager();
-                                  uiManager.GetActiveElement()->OnWindowResize(width, height); });
+                                  if (uiManager.GetActiveElement())
+                                    uiManager.GetActiveElement()->OnWindowResize(width, height); });
 
     glfwSetKeyCallback(m_Handle, [](GLFWwindow *handle, int key, int scancode, int action, int mods)
                        { Input::s_KeysDown[key] = action == GLFW_PRESS || action == GLFW_REPEAT;

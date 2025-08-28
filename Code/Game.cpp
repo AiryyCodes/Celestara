@@ -38,5 +38,5 @@ void Game::Render()
 
     m_UIManager.Render();
 
-    Renderer::SubmitText("Hello, World!", Font::Main, Vector2f(100.0f, 100.0f), 4.0f, Vector3(1.0f, 1.0f, 1.0f));
+    Renderer::SubmitText("Hello, World!", Font::Main, Vector2f(100.0f, 100.0f), 1.0f, Vector3(1.0f, 1.0f, 1.0f));
 }

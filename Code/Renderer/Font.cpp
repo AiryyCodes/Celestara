@@ -43,8 +43,8 @@ void FontFace::LoadCharacters()
         // Set texture options
         glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_WRAP_S, GL_CLAMP_TO_EDGE);
         glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_WRAP_T, GL_CLAMP_TO_EDGE);
-        glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_MIN_FILTER, GL_LINEAR);
-        glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_MAG_FILTER, GL_LINEAR);
+        glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_MIN_FILTER, GL_NEAREST);
+        glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_MAG_FILTER, GL_NEAREST);
 
         // Store character for later use
         Character character;
@@ -52,6 +52,7 @@ void FontFace::LoadCharacters()
         character.Size = glm::ivec2(m_Face->glyph->bitmap.width, m_Face->glyph->bitmap.rows);
         character.Bearing = glm::ivec2(m_Face->glyph->bitmap_left, m_Face->glyph->bitmap_top);
         character.Advance = m_Face->glyph->advance.x;
+
         m_Characters.insert(std::pair<char, Character>(c, character));
     }
 }
@@ -78,7 +79,7 @@ FontFace *FontManager::LoadFont(Font font, const std::string &path)
         return nullptr;
     }
 
-    FT_Set_Pixel_Sizes(face, 0, 24);
+    FT_Set_Pixel_Sizes(face, 0, 36);
 
     FontFace myFace(face);
 
