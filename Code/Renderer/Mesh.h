@@ -5,11 +5,17 @@
 
 #include <vector>
 
+enum class MeshUsage
+{
+    Static,
+    Dynamic
+};
+
 class Mesh
 {
 public:
-    Mesh();
-    Mesh(const std::vector<Vertex> &vertices);
+    Mesh(MeshUsage usage = MeshUsage::Static);
+    Mesh(const std::vector<Vertex> &vertices, MeshUsage usage = MeshUsage::Static);
 
     void Bind() const;
     static void Unbind();
@@ -27,6 +33,8 @@ private:
 private:
     unsigned int m_Id = 0;
     unsigned int m_VBO = 0;
+
+    MeshUsage m_Usage;
 
     std::vector<Vertex> m_Vertices;
     int m_NumVertices = 0;

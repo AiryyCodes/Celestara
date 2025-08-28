@@ -2,7 +2,9 @@
 
 #include "Math/Math.h"
 #include "Math/Transform.h"
+#include "Memory.h"
 #include "Renderer/Camera.h"
+#include "Renderer/Font.h"
 #include "Renderer/Mesh.h"
 #include "Renderer/Shader.h"
 #include "Renderer/Window.h"
@@ -40,6 +42,7 @@ public:
 
     static void Submit(const Mesh &mesh, const Transform &transform);
     static void SubmitUI(const Mesh &mesh, const Vector2f &position, const Vector2i &size, int scale);
+    static void SubmitText(const std::string &text, Font font, Vector2f position, float scale, const Vector3 &color);
 
     static Window *GetMainWindow() { return s_MainWindow; }
     static void SetMainWindow(Window &window) { s_MainWindow = &window; }
@@ -53,6 +56,7 @@ public:
     static const Shader &GetAnimationShader() { return s_AnimationShader; }
     static const Shader &GetUIShader() { return s_UIShader; }
     static const Shader &GetSlotShader() { return s_SlotShader; }
+    static const Shader &GetTextShader() { return s_TextShader; }
 
 private:
     static inline Window *s_MainWindow = nullptr;
@@ -64,4 +68,7 @@ private:
     static inline Shader s_AnimationShader;
     static inline Shader s_UIShader;
     static inline Shader s_SlotShader;
+    static inline Shader s_TextShader;
+
+    static inline Ref<Mesh> s_TextMesh;
 };

@@ -6,5 +6,5 @@ struct Vertex
 {
     Vector2f Position;
     Vector2f UV;
-    int Layer;
+    int Layer = 0;
 };

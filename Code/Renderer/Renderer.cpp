@@ -1,12 +1,17 @@
 #include "Renderer.h"
 #include "Math/Math.h"
+#include "Memory.h"
 #include "Renderer/Camera.h"
+#include "Renderer/Font.h"
+#include "Renderer/Mesh.h"
 #include "Renderer/Texture.h"
 
 #include <glad/gl.h>
 #include <GLFW/glfw3.h>
 #include <cstdio>
 #include <glm/ext/matrix_transform.hpp>
+#include <string>
+#include <vector>
 
 bool Renderer::PreInit()
 {
@@ -38,6 +43,9 @@ bool Renderer::Init()
     s_AnimationShader.Init("Assets/Shaders/Animation.vert", "Assets/Shaders/Animation.frag");
     s_UIShader.Init("Assets/Shaders/UI.vert", "Assets/Shaders/UI.frag");
     s_SlotShader.Init("Assets/Shaders/Slot.vert", "Assets/Shaders/Slot.frag");
+    s_TextShader.Init("Assets/Shaders/Text.vert", "Assets/Shaders/Text.frag");
+
+    s_TextMesh = CreateRef<Mesh>(MeshUsage::Dynamic);
 
     return true;
 }
@@ -48,6 +56,7 @@ void Renderer::Shutdown()
     s_AnimationShader.Destroy();
     s_UIShader.Destroy();
     s_SlotShader.Destroy();
+    s_TextShader.Destroy();
 }
 
 void Renderer::Begin(const Shader &shader, const Camera &camera)
@@ -111,6 +120,61 @@ void Renderer::SubmitUI(const Mesh &mesh, const Vector2f &position, const Vector
 
     Texture::Unbind();
     Texture3D::Unbind();
+}
+
+void Renderer::SubmitText(const std::string &text, Font font, Vector2f position, float scale, const Vector3 &color)
+{
+    Renderer::Begin(s_TextShader);
+
+    std::vector<Vertex> vertices;
+    vertices.reserve(text.size() * 6);
+
+    FontFace *face = FontManager::GetFont(font);
+    if (!face)
+        return;
+
+    const auto &characters = face->GetCharacters();
+
+    for (char c : text)
+    {
+        auto it = characters.find(c);
+        if (it == characters.end())
+            continue;
+
+        const Character &ch = it->second;
+
+        float xpos = position.x + ch.Bearing.x * scale;
+        float ypos = position.y - (ch.Size.y - ch.Bearing.y) * scale;
+
+        float w = ch.Size.x * scale;
+        float h = ch.Size.y * scale;
+
+        // Build 6 vertices for the quad
+        std::vector<Vertex> verts = {
+            {{xpos, ypos + h}, {0.0f, 0.0f}, 0},
+            {{xpos, ypos}, {0.0f, 1.0f}, 0},
+            {{xpos + w, ypos}, {1.0f, 1.0f}, 0},
+
+            {{xpos, ypos + h}, {0.0f, 0.0f}, 0},
+            {{xpos + w, ypos}, {1.0f, 1.0f}, 0},
+            {{xpos + w, ypos + h}, {1.0f, 0.0f}, 0},
+        };
+
+        // Bind the glyph texture
+        glBindTexture(GL_TEXTURE_2D, ch.TextureID);
+
+        // Update the dynamic mesh
+        s_TextMesh->SetVertices(verts);
+
+        // Draw quad
+        glDrawArrays(GL_TRIANGLES, 0, s_TextMesh->GetNumVertices());
+
+        // Advance cursor
+        position.x += (ch.Advance >> 6) * scale; // FreeType stores advance in 1/64 pixels
+    }
+
+    Mesh::Unbind();
+    Texture::Unbind();
 }
 
 void Renderer::End()

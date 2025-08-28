@@ -68,8 +68,9 @@ void InventoryUI::Render()
         Window *window = Renderer::GetMainWindow();
 
         int flippedY = window->GetHeight() - mouseY;
+        float offset = 16.0f * 3 / 2;
 
-        Renderer::SubmitUI(m_Mesh, Vector2f(mouseX, flippedY) - Vector2f(16 * 3 / 2, 16 * 3 / 2), Vector2i(16, 16), GetScale());
+        Renderer::SubmitUI(m_Mesh, Vector2f(mouseX, flippedY) - Vector2f(offset, offset), Vector2i(16, 16), GetScale());
     }
 }
 
