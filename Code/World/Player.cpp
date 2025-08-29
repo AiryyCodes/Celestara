@@ -189,7 +189,7 @@ void Player::Render()
     std::string xCoord = ToString(GetTransform().GetPosition().x, 4);
     std::string yCoord = ToString(GetTransform().GetPosition().y, 4);
 
-    Renderer::SubmitText("X: " + xCoord + " Y: " + yCoord, Font::Main, Vector2f(4.0f, 6.0f), 0.5f, Vector3(1.0f, 1.0f, 1.0f));
+    Renderer::SubmitText("X: " + xCoord + " Y: " + yCoord, Font::Main, Vector2f(4.0f, 6.0f), 0.75f, Vector3(1.0f, 1.0f, 1.0f));
 }
 
 void Player::UpdateAnims(float delta)

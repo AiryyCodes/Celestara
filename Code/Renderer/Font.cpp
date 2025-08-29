@@ -77,7 +77,7 @@ FontFace *FontManager::LoadFont(Font font, const std::string &path)
         return nullptr;
     }
 
-    FT_Set_Pixel_Sizes(face, 0, 36);
+    FT_Set_Pixel_Sizes(face, 0, 32);
 
     FontFace myFace(face);
 
