@@ -185,3 +185,14 @@ void Shader::SetUniform(const std::string &name, int value) const
 
     glUniform1i(location, value);
 }
+
+void Shader::SetUniform(const std::string &name, float value) const
+{
+    int location = glGetUniformLocation(m_Id, name.c_str());
+    if (location == -1)
+    {
+        return;
+    }
+
+    glUniform1f(location, value);
+}

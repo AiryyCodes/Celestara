@@ -140,7 +140,7 @@ void Renderer::SubmitText(const std::string &text, Font font, Vector2f position,
     for (char c : text)
     {
         auto it = characters.find(c);
-        if (it == characters.end())
+        if (it == characters.end() && c != ' ')
             continue;
 
         const Character &ch = it->second;
@@ -162,6 +162,12 @@ void Renderer::SubmitText(const std::string &text, Font font, Vector2f position,
             {{xpos + w, ypos + h}, {1.0f, 0.0f}, 0},
         };
 
+        // Advance cursor
+        position.x += (ch.Advance >> 6) * scale; // FreeType stores advance in 1/64 pixels
+
+        if (c == ' ')
+            continue;
+        glActiveTexture(GL_TEXTURE0);
         // Bind the glyph texture
         glBindTexture(GL_TEXTURE_2D, ch.TextureID);
 
@@ -169,14 +175,12 @@ void Renderer::SubmitText(const std::string &text, Font font, Vector2f position,
         s_TextMesh->SetVertices(verts);
 
         s_TextShader.SetUniform("u_TextColor", color);
+        s_TextShader.SetUniform("u_Texture", 0);
 
         s_TextMesh->Bind();
 
         // Draw quad
         glDrawArrays(GL_TRIANGLES, 0, s_TextMesh->GetNumVertices());
-
-        // Advance cursor
-        position.x += (ch.Advance >> 6) * scale; // FreeType stores advance in 1/64 pixels
     }
 
     Mesh::Unbind();

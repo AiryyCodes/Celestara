@@ -1,6 +1,7 @@
 #pragma once
 
 #include "Math/Math.h"
+#include <cstdint>
 #include <freetype2/ft2build.h>
 #include <map>
 #include <string>
@@ -27,8 +28,8 @@ public:
 
     const FT_Face &GetFace() const { return m_Face; }
 
-    const std::map<char, Character> &GetCharacters() const { return m_Characters; }
-    std::map<char, Character> GetCharacters() { return m_Characters; }
+    const std::map<uint32_t, Character> &GetCharacters() const { return m_Characters; }
+    std::map<uint32_t, Character> GetCharacters() { return m_Characters; }
 
 private:
     void LoadCharacters();
@@ -36,7 +37,7 @@ private:
 private:
     FT_Face m_Face;
 
-    std::map<char, Character> m_Characters;
+    std::map<uint32_t, Character> m_Characters;
 };
 
 class FontManager

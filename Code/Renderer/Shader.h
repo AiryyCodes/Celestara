@@ -23,6 +23,7 @@ public:
     void SetUniform(const std::string &name, const Vector3 &value) const;
     void SetUniform(const std::string &name, bool value) const;
     void SetUniform(const std::string &name, int value) const;
+    void SetUniform(const std::string &name, float value) const;
 
 private:
     unsigned int CompileShader(const std::string &path, const std::string &name, unsigned int type);
