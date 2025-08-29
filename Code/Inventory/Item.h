@@ -60,6 +60,7 @@ public:
 
     int GetQuantity() const { return m_Quantity; }
     void SetQuantity(int quantity) { m_Quantity = quantity; }
+    int AddQuantity(int quantity);
 
 private:
     Ref<Item> m_Item = nullptr;

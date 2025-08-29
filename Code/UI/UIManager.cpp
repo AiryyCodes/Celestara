@@ -19,18 +19,18 @@ void UIManager::Update()
     int mouseX = std::floor(static_cast<int>(Input::GetMouseX()));
     int mouseY = std::floor(static_cast<int>(Input::GetMouseY()));
 
-    // LOG_INFO("Checking element click at: X: {} Y: {}", mouseX, mouseY);
-
     bool inside = m_ActiveElement->IsInside(mouseX, mouseY);
 
-    // LOG_INFO("Inside: {}", inside);
-
-    bool pressed = Input::IsButtonJustDown(GLFW_MOUSE_BUTTON_LEFT);
-    // LOG_INFO("Pressed: {}", pressed);
-
-    if (inside && pressed)
+    if (inside)
     {
-        m_ActiveElement->OnClick(mouseX, mouseY);
+        if (Input::IsButtonJustDown(GLFW_MOUSE_BUTTON_LEFT))
+        {
+            m_ActiveElement->OnClick(mouseX, mouseY, GLFW_MOUSE_BUTTON_LEFT);
+        }
+        else if (Input::IsButtonJustDown(GLFW_MOUSE_BUTTON_RIGHT))
+        {
+            m_ActiveElement->OnClick(mouseX, mouseY, GLFW_MOUSE_BUTTON_RIGHT);
+        }
     }
 }
 

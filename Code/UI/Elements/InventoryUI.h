@@ -38,13 +38,13 @@ public:
 
     void Render() override;
 
-    void OnClick(int x, int y) override;
+    void OnClick(int x, int y, int button) override;
     void OnWindowResize(int width, int height) override;
 
     void FillSlots(int rows, int columns);
 
 private:
-    void HandleSlotClick(InventorySlotUI &slot);
+    void HandleSlotClick(InventorySlotUI &slot, int button);
 
 private:
     int m_Rows;

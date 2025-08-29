@@ -23,3 +23,15 @@ int ItemStack::TryMerge(ItemStack &other)
 
     return mergeAmount;
 }
+
+int ItemStack::AddQuantity(int quantity)
+{
+    if (IsEmpty())
+        return 0;
+
+    int spaceLeft = m_Item->GetMaxStackSize() - m_Quantity;
+    int addAmount = std::min(spaceLeft, quantity);
+    m_Quantity += addAmount;
+
+    return addAmount;
+}

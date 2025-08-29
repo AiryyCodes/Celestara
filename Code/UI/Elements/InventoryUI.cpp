@@ -2,7 +2,6 @@
 #include "Input.h"
 #include "Inventory/Inventory.h"
 #include "Inventory/Item.h"
-#include "Logger.h"
 #include "Memory.h"
 #include "Registry/ItemRegistry.h"
 #include "Math/Math.h"
@@ -99,7 +98,7 @@ void InventoryUI::Render()
     }
 }
 
-void InventoryUI::OnClick(int x, int y)
+void InventoryUI::OnClick(int x, int y, int button)
 {
     Window *window = Renderer::GetMainWindow();
 
@@ -110,7 +109,7 @@ void InventoryUI::OnClick(int x, int y)
         bool inside = slot.IsInside(x, flippedY);
         if (inside)
         {
-            HandleSlotClick(slot);
+            HandleSlotClick(slot, button);
             return;
         }
     }
@@ -123,9 +122,48 @@ void InventoryUI::OnWindowResize(int width, int height)
     FillSlots(m_Rows, m_Columns);
 }
 
-void InventoryUI::HandleSlotClick(InventorySlotUI &slot)
+void InventoryUI::HandleSlotClick(InventorySlotUI &slot, int button)
 {
     ItemStack &slotItem = slot.GetItem();
+
+    if (button == GLFW_MOUSE_BUTTON_RIGHT)
+    {
+        if (m_CursorItem.IsEmpty() && !slotItem.IsEmpty())
+        {
+            // Split the stack
+            int total = slotItem.GetQuantity();
+            int half = (total + 1) / 2; // cursor gets the larger half
+            int remain = total - half;
+
+            m_CursorItem = ItemStack(slotItem.GetItem(), half);
+            if (remain > 0)
+                slotItem.SetQuantity(remain);
+            else
+                slot.Clear();
+        }
+        else if (!m_CursorItem.IsEmpty())
+        {
+            // Place one item from cursor into slot
+            if (slotItem.IsEmpty())
+            {
+                slot.SetItem(ItemStack(m_CursorItem.GetItem(), 1));
+                m_CursorItem.AddQuantity(-1);
+            }
+            else if (slotItem.GetItem()->GetId() == m_CursorItem.GetItem()->GetId())
+            {
+                // Add one item if stack not full
+                if (slotItem.GetQuantity() < slotItem.GetItem()->GetMaxStackSize())
+                {
+                    slotItem.AddQuantity(1);
+                    m_CursorItem.AddQuantity(-1);
+                }
+            }
+
+            if (m_CursorItem.GetQuantity() <= 0)
+                m_CursorItem.Clear();
+        }
+        return;
+    }
 
     // 1️⃣ Cursor is empty → pick up slot
     if (m_CursorItem.IsEmpty())

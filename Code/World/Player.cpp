@@ -32,10 +32,12 @@ Player::Player()
 
     ItemStack stack(ItemRegistry::GetItem("test"), 300);
     ItemStack stack2(ItemRegistry::GetItem("test2"), 300);
+
+    stack2.AddQuantity(1000);
     m_Inventory.SetItem(0, stack);
     m_Inventory.SetItem(1, stack);
     m_Inventory.SetItem(2, stack2);
-    m_Inventory.AddItem(stack2);
+    // m_Inventory.AddItem(stack2);
     m_Inventory.AddItem(stack);
     m_Inventory.AddItem(stack);
 

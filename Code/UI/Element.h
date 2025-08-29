@@ -22,7 +22,7 @@ public:
 
     virtual void Render() {}
 
-    virtual void OnClick(int x, int y) {}
+    virtual void OnClick(int x, int y, int button) {}
     virtual void OnWindowResize(int width, int height) {};
 
     bool IsInside(int mouseX, int mouseY) const;
