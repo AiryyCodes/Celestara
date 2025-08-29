@@ -2,6 +2,7 @@
 #include "Input.h"
 #include "Inventory/Inventory.h"
 #include "Inventory/Item.h"
+#include "Logger.h"
 #include "Memory.h"
 #include "Registry/ItemRegistry.h"
 #include "Math/Math.h"
@@ -10,7 +11,7 @@
 #include "Renderer/Window.h"
 #include <string>
 
-InventorySlotUI::InventorySlotUI(int row, int column, int index, ItemStack *item)
+InventorySlotUI::InventorySlotUI(int row, int column, int index, const ItemStack &item)
     : UIElement(Vector2i(16, 16), "Assets/Textures/Transparent.png"),
       m_Row(row), m_Column(column), m_Index(index), m_Item(item)
 {
@@ -19,22 +20,17 @@ InventorySlotUI::InventorySlotUI(int row, int column, int index, ItemStack *item
 
 void InventorySlotUI::Render()
 {
-    if (!m_Item)
+    if (m_Item.IsEmpty())
         return;
 
-    if (m_Item->Id < 0 || m_Item->Quantity <= 0)
-        return;
-
-    Ref<Item> item = ItemRegistry::GetItem(m_Item->Id);
-    if (!item)
-        return;
+    Ref<Item> item = m_Item.GetItem();
 
     Renderer::Begin(Renderer::GetSlotShader());
     m_Mesh.SetTexture(ItemRegistry::GetTextures());
     Renderer::GetSlotShader().SetUniform("u_Layer", item->GetTextureLayer());
     Renderer::SubmitUI(m_Mesh, GetPosition(), GetSize(), GetScale());
 
-    std::string quantity = std::to_string(m_Item->Quantity);
+    std::string quantity = std::to_string(m_Item.GetQuantity());
 
     float textWidth = FontManager::GetTextWidth(Font::Main, quantity, 0.5f);
 
@@ -63,11 +59,9 @@ void InventoryUI::Render()
         slot.Render();
     }
 
-    if (m_CursorItem)
+    if (!m_CursorItem.IsEmpty())
     {
-        const Ref<Item> item = ItemRegistry::GetItem(m_CursorItem->Id);
-        if (!item)
-            return;
+        const Ref<Item> item = m_CursorItem.GetItem();
 
         Renderer::Begin(Renderer::GetSlotShader());
         m_Mesh.SetTexture(ItemRegistry::GetTextures());
@@ -91,7 +85,7 @@ void InventoryUI::Render()
         Renderer::SubmitUI(m_Mesh, slotPos, slotSize, scale);
 
         // draw the quantity
-        std::string quantity = std::to_string(m_CursorItem->Quantity);
+        std::string quantity = std::to_string(m_CursorItem.GetQuantity());
         float textScale = 0.5f;
 
         float textWidth = FontManager::GetTextWidth(Font::Main, quantity, textScale);
@@ -131,18 +125,30 @@ void InventoryUI::OnWindowResize(int width, int height)
 
 void InventoryUI::HandleSlotClick(InventorySlotUI &slot)
 {
-    ItemStack *slotItem = slot.GetItem();
-    if (m_CursorItem == nullptr)
+    ItemStack &slotItem = slot.GetItem();
+
+    // 1️⃣ Cursor is empty → pick up slot
+    if (m_CursorItem.IsEmpty())
     {
-        // Pick up from slot
         m_CursorItem = slotItem;
         slot.Clear();
+        return;
     }
-    else
+
+    // 2️⃣ Slot is empty → place cursor there
+    if (slotItem.IsEmpty())
     {
-        ItemStack *temp = slotItem;
         slot.SetItem(m_CursorItem);
-        m_CursorItem = temp;
+        m_CursorItem.Clear();
+        return;
+    }
+
+    slotItem.TryMerge(m_CursorItem);
+
+    // If cursor still has items left after merging, swap them
+    if (!m_CursorItem.IsEmpty())
+    {
+        std::swap(slotItem, m_CursorItem);
     }
 }
 
@@ -183,7 +189,7 @@ void InventoryUI::FillSlots(int rows, int columns)
             // Flip Y so row 0 is top
             float y = startY + (rows - 1 - row) * (slotH + spacing);
 
-            InventorySlotUI uiSlot(row, col, index, m_Inventory.GetItem(index));
+            InventorySlotUI uiSlot(row, col, index, *m_Inventory.GetItem(index));
             uiSlot.SetScale(slotScale);
             uiSlot.SetSize(slotSize);
             uiSlot.SetPosition({x, y});

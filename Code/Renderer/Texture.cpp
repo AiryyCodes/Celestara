@@ -143,7 +143,7 @@ void Texture3D::Init()
         }
         else
         {
-            LOG_ERROR("Failed to load tile: " + m_Paths[i]);
+            LOG_ERROR("Failed to load texture: " + m_Paths[i]);
         }
     }
 

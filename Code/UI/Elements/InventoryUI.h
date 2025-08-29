@@ -10,16 +10,16 @@
 class InventorySlotUI : public UIElement
 {
 public:
-    InventorySlotUI(int row, int column, int index, ItemStack *item);
+    InventorySlotUI(int row, int column, int index, const ItemStack &item);
 
     void Render() override;
 
-    void Clear() { m_Item = nullptr; }
+    void Clear() { m_Item.Clear(); }
 
     int GetIndex() const { return m_Index; }
 
-    ItemStack *GetItem() { return m_Item; }
-    void SetItem(ItemStack *item) { m_Item = item; }
+    ItemStack &GetItem() { return m_Item; }
+    void SetItem(const ItemStack &item) { m_Item = item; }
 
 private:
     int m_Row;
@@ -28,7 +28,7 @@ private:
 
     Mesh m_Mesh;
 
-    ItemStack *m_Item;
+    ItemStack m_Item;
 };
 
 class InventoryUI : public UIElement
@@ -55,5 +55,5 @@ private:
     Inventory &m_Inventory;
 
     Mesh m_Mesh;
-    ItemStack *m_CursorItem = nullptr;
+    ItemStack m_CursorItem;
 };

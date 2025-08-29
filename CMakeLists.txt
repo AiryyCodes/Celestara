@@ -23,7 +23,8 @@ find_package(glm REQUIRED)
 find_package(spdlog REQUIRED)
 find_package(box2d REQUIRED)
 find_package(Freetype REQUIRED)
+find_package(nlohmann_json REQUIRED)
 
 target_include_directories(${PROJECT_NAME} PRIVATE ${FREETYPE_INCLUDE_DIRS})
 
-target_link_libraries(${PROJECT_NAME} PRIVATE glfw glad glm spdlog::spdlog stb box2d ${FREETYPE_LIBRARIES})
+target_link_libraries(${PROJECT_NAME} PRIVATE glfw glad glm spdlog::spdlog stb box2d ${FREETYPE_LIBRARIES} nlohmann_json)

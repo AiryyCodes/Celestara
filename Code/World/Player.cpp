@@ -6,6 +6,7 @@
 #include "Memory.h"
 #include "Physics/Category.h"
 #include "Registry/TileRegistry.h"
+#include "Registry/ItemRegistry.h"
 #include "Renderer/Renderer.h"
 #include "UI/Elements/InventoryUI.h"
 #include "Util/Direction.h"
@@ -29,12 +30,14 @@ Player::Player()
       m_Inventory(4, 4)
 {
 
-    ItemStack stack;
-    stack.Id = 0;
-    stack.Quantity = 1000;
-
+    ItemStack stack(ItemRegistry::GetItem("test"), 300);
+    ItemStack stack2(ItemRegistry::GetItem("test2"), 300);
     m_Inventory.SetItem(0, stack);
-    // m_Inventory.SetItem(12, stack);
+    m_Inventory.SetItem(1, stack);
+    m_Inventory.SetItem(2, stack2);
+    m_Inventory.AddItem(stack2);
+    m_Inventory.AddItem(stack);
+    m_Inventory.AddItem(stack);
 
     m_InventoryUI = CreateRef<InventoryUI>(m_Inventory);
     m_InventoryUI->FillSlots(4, 4);
